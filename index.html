@@ -93,7 +93,106 @@
         }
 
         .hidden-page { display: none; }
+
+        /* ==============================
+        COUPONS - THEMES (CHỈNH MÀU Ở ĐÂY)
+        Mỗi ô coupon có nền riêng nhưng vẫn hợp tone VietSoul
+        ============================== */
+
+        /* Style chung cho coupon card */
+        #coupons-page .coupon-card{
+            /* Default variables (nếu thiếu theme) */
+            --coupon-bg: #ffffff;
+            --coupon-bg2: #ffffff;
+            --coupon-soft: rgba(255,255,255,0.75);
+            --coupon-border: rgba(139, 0, 0, 0.10);
+            --coupon-accent: rgba(139, 0, 0, 0.22);
+            --coupon-chip-bg: rgba(255, 215, 0, 0.92);
+            --coupon-chip-text: var(--color-primary);
+
+            background: linear-gradient(135deg, var(--coupon-bg) 0%, var(--coupon-bg2) 70%, #ffffff 100%);
+            border-color: var(--coupon-border) !important;
+
+            /* viền nhấn bên trái cho đẹp & dễ phân biệt */
+            border-left-width: 6px !important;
+            border-left-color: var(--coupon-accent) !important;
+        }
+
+        /* Khối chứa mã (WELCOME10...) đổi nền theo theme */
+        #coupons-page .coupon-card .coupon-code-box{
+            background: var(--coupon-soft) !important;
+            border-color: var(--coupon-border) !important;
+        }
+
+        /* Pill NEW/HOT/ECO... đổi nền theo theme */
+        #coupons-page .coupon-card .coupon-chip{
+            background: var(--coupon-chip-bg) !important;
+            color: var(--coupon-chip-text) !important;
+        }
+
+        /* ===== THEME THEO TỪNG MÃ (CHỈNH MÀU TỪNG Ô Ở ĐÂY) ===== */
+
+        /* 1) WELCOME10 - hồng đào */
+        #coupons-page .coupon-card[data-coupon-code="WELCOME10"]{
+            --coupon-bg: #FFF1F0;
+            --coupon-bg2: #FFFFFF;
+            --coupon-soft: #FFE8E5;
+            --coupon-border: rgba(139, 0, 0, 0.10);
+            --coupon-accent: #F2A9A0;
+            --coupon-chip-bg: #FFD8D2;
+        }
+
+        /* 2) FREESHIP50 - xanh biển nhạt */
+        #coupons-page .coupon-card[data-coupon-code="FREESHIP50"]{
+            --coupon-bg: #F0F7FF;
+            --coupon-bg2: #FFFFFF;
+            --coupon-soft: #E3F0FF;
+            --coupon-border: rgba(20, 70, 160, 0.18);
+            --coupon-accent: #9CC6FF;
+            --coupon-chip-bg: #D8EAFF;
+        }
+
+        /* 3) GREEN15 - xanh mint */
+        #coupons-page .coupon-card[data-coupon-code="GREEN15"]{
+            --coupon-bg: #F0FFF5;
+            --coupon-bg2: #FFFFFF;
+            --coupon-soft: #DFF8EA;
+            --coupon-border: rgba(25, 120, 80, 0.18);
+            --coupon-accent: #7AD3A8;
+            --coupon-chip-bg: #CFF1E2;
+        }
+
+        /* 4) FESTIVAL20 - vàng/amber nhạt */
+        #coupons-page .coupon-card[data-coupon-code="FESTIVAL20"]{
+            --coupon-bg: #FFF7E6;
+            --coupon-bg2: #FFFFFF;
+            --coupon-soft: #FFF0CC;
+            --coupon-border: rgba(170, 110, 0, 0.18);
+            --coupon-accent: #F3C86A;
+            --coupon-chip-bg: #FFE2A6;
+        }
+
+        /* 5) BATTRANG05 - teal nhạt (gốm) */
+        #coupons-page .coupon-card[data-coupon-code="BATTRANG05"]{
+            --coupon-bg: #F0FFFE;
+            --coupon-bg2: #FFFFFF;
+            --coupon-soft: #DFF7F6;
+            --coupon-border: rgba(0, 120, 120, 0.18);
+            --coupon-accent: #68C7C2;
+            --coupon-chip-bg: #C8F0ED;
+        }
+
+        /* 6) LUA12 - tím lavender nhạt */
+        #coupons-page .coupon-card[data-coupon-code="LUA12"]{
+            --coupon-bg: #F6F2FF;
+            --coupon-bg2: #FFFFFF;
+            --coupon-soft: #EEE7FF;
+            --coupon-border: rgba(120, 90, 200, 0.18);
+            --coupon-accent: #B5A0FF;
+            --coupon-chip-bg: #E3DAFF;
+        }
     </style>
+    
 </head>
 <body class="min-h-screen flex flex-col">
 
@@ -101,7 +200,7 @@
     <header class="bg-primary shadow-lg sticky top-0 z-50">
         <div class="container mx-auto px-4 py-3 flex items-center justify-between">
             <div onclick="showPage('home')" class="flex items-center space-x-4 cursor-pointer">
-                <span class="text-5xl text-white font-bold tracking-widest text-display uppercase">VIET SOUL</span>
+                <span class="text-3xl sm:text-4xl md:text-5xl text-white font-bold tracking-widest text-display uppercase">VIET SOUL</span>
                 <span class="hidden md:inline-block text-[10px] px-2 py-1 rounded-full bg-secondary text-primary font-bold tracking-wider">CULTURE & GREEN COMMERCE</span>
             </div>
             
@@ -113,7 +212,7 @@
             </div>
 
             <div class="flex space-x-4 text-white">
-                <button class="flex items-center space-x-1 p-2 rounded-full hover:bg-white/10 transition group">
+                <button onclick="showPage('login')" class="flex items-center space-x-1 p-2 rounded-full hover:bg-white/10 transition group">
                     <svg class="w-6 h-6 group-hover:text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
                     <span class="hidden sm:inline text-xs">Tài khoản</span>
                 </button>
@@ -565,7 +664,7 @@ Chúng tôi không chỉ bán những sản phẩm thủ công; chúng tôi đan
         <main id="products-page" class="hidden-page flex-grow container mx-auto px-4 py-8 max-w-7xl text-left animate-in fade-in duration-500">
             <div class="grid grid-cols-1 md:grid-cols-12 gap-8">
                 <!-- Sidebar -->
-                <aside class="md:col-span-3 bg-white p-6 rounded-xl shadow-lg h-fit sticky top-28">
+                <aside class="md:col-span-3 bg-white p-6 rounded-xl shadow-lg h-fit md:sticky md:top-28">
                     <h3 class="text-xl font-bold text-primary mb-4 border-b pb-2 text-display uppercase tracking-widest">Danh mục Văn hóa</h3>
                     <div id="filter-container" class="space-y-2 font-heading uppercase text-[10px]">
                         <button data-filter="all" class="filter-btn active w-full text-left py-2 px-4 rounded-lg hover:bg-primary hover:text-white transition">Tất cả sản phẩm</button>
@@ -596,6 +695,645 @@ Chúng tôi không chỉ bán những sản phẩm thủ công; chúng tôi đan
                 </section>
             </div>
         </main>
+                <!-- PAGE 3: COUPONS PAGE -->
+        <main id="coupons-page" class="hidden-page flex-grow container mx-auto px-4 py-8 max-w-7xl text-left">
+            <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-8 border-b-2 border-primary/20 pb-4">
+                <div>
+                    <h2 class="text-3xl font-bold text-primary text-display uppercase tracking-wider">Mã Giảm Giá</h2>
+                    <p class="text-xs text-gray-500 mt-1 uppercase tracking-widest">Săn voucher – dùng nhanh – ưu đãi thật</p>
+                </div>
+                <div class="flex gap-3">
+                    <button onclick="showPage('home')" class="text-[10px] font-bold text-gray-400 hover:text-primary transition uppercase tracking-widest">← Về Trang Chủ</button>
+                    <button onclick="showPage('products')" class="text-[10px] font-bold text-gray-400 hover:text-primary transition uppercase tracking-widest">Sang Danh Mục →</button>
+                </div>
+            </div>
+
+            <!-- Search / Filters -->
+            <div class="bg-white rounded-2xl shadow-lg p-6 border border-primary/10 mb-8">
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-center">
+                    <div class="lg:col-span-6">
+                        <label class="block text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">Tìm mã</label>
+                        <div class="flex">
+                            <input id="coupon-search" type="text" placeholder="VD: WELCOME10, FREESHIP..." class="w-full p-3 rounded-l-xl border border-primary/10 focus:ring-2 focus:ring-secondary text-sm">
+                            <button id="coupon-search-btn" class="bg-secondary text-primary font-black px-5 rounded-r-xl hover:opacity-90 transition text-sm">TÌM</button>
+                        </div>
+                        <p class="text-[11px] text-gray-500 mt-2">Tip: bấm <b>SAO CHÉP</b> để copy mã.</p>
+                    </div>
+
+                    <div class="lg:col-span-6">
+                        <label class="block text-[10px] font-bold uppercase tracking-widest text-black-400 mb-2">Bộ lọc nhanh</label>
+                        <div class="flex flex-wrap gap-2">
+                            <button class="coupon-filter-btn px-4 py-2 rounded-full border border-primary/20 text-primary text-[11px] font-bold hover:bg-primary hover:text-white transition" data-coupon-filter="all">Tất cả</button>
+                            <button class="coupon-filter-btn px-4 py-2 rounded-full border border-primary/20 text-primary text-[11px] font-bold hover:bg-primary hover:text-white transition" data-coupon-filter="order">Giảm đơn</button>
+                            <button class="coupon-filter-btn px-4 py-2 rounded-full border border-primary/20 text-primary text-[11px] font-bold hover:bg-primary hover:text-white transition" data-coupon-filter="ship">Freeship</button>
+                            <button class="coupon-filter-btn px-4 py-2 rounded-full border border-primary/20 text-primary text-[11px] font-bold hover:bg-primary hover:text-white transition" data-coupon-filter="green">Green Tag</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Coupon grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                <!-- 1 -->
+                <div class="coupon-card bg-white rounded-2xl shadow-lg p-6 border border-primary/10" data-coupon-type="order" data-coupon-code="WELCOME10">
+                    <div class="flex items-start justify-between gap-4">
+                        <div>
+                            <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Giảm đơn hàng</p>
+                            <h3 class="text-4xl text-primary font-black text-display leading-none">-10%</h3>
+                            <p class="text-sm text-gray-600 mt-2">Đơn từ <b>300.000₫</b></p>
+                        </div>
+                        <span class="coupon-chip bg-secondary text-primary text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest">New</span>
+                    </div>
+
+                    <div class="coupon-code-box mt-4 bg-[#fcf8f5] rounded-xl p-4 border border-primary/10 flex items-center justify-between gap-3">
+                        <div>
+                            <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Mã</p>
+                            <p class="text-xl font-black text-primary tracking-widest">WELCOME10</p>
+                        </div>
+                        <button data-copy-code="WELCOME10" class="px-4 py-2 bg-primary text-white rounded-full text-[11px] font-black uppercase tracking-widest btn-hover transition">Sao chép</button>
+                    </div>
+
+                    <div class="mt-4 flex items-center justify-between text-[11px] text-gray-500">
+                        <span>HSD: 31/12/2026</span>
+                        <span>Không cộng dồn</span>
+                    </div>
+                    <p class="text-xs text-gray-600 mt-3">Áp dụng cho tất cả sản phẩm trên VietSoul.</p>
+                </div>
+
+                <!-- 2 -->
+                <div class="coupon-chip coupon-card bg-white rounded-2xl shadow-lg p-6 border border-primary/10" data-coupon-type="ship" data-coupon-code="FREESHIP50">
+                    <div class="flex items-start justify-between gap-4">
+                        <div>
+                            <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Freeship</p>
+                            <h3 class="text-4xl text-primary font-black text-display leading-none">-50K</h3>
+                            <p class="text-sm text-gray-600 mt-2">Đơn từ <b>200.000₫</b></p>
+                        </div>
+                        <span class="bg-primary text-white text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest">Hot</span>
+                    </div>
+
+                    <div class="mt-4 bg-[#fcf8f5] rounded-xl p-4 border border-primary/10 flex items-center justify-between gap-3">
+                        <div>
+                            <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Mã</p>
+                            <p class="text-xl font-black text-primary tracking-widest">FREESHIP50</p>
+                        </div>
+                        <button data-copy-code="FREESHIP50" class="px-4 py-2 bg-primary text-white rounded-full text-[11px] font-black uppercase tracking-widest btn-hover transition">Sao chép</button>
+                    </div>
+
+                    <div class="mt-4 flex items-center justify-between text-[11px] text-gray-500">
+                        <span>HSD: 30/06/2026</span>
+                        <span>Tối đa 50K</span>
+                    </div>
+                    <p class="text-xs text-gray-600 mt-3">Tùy khu vực & đơn vị vận chuyển.</p>
+                </div>
+
+                <!-- 3 -->
+                <div class="coupon-chip coupon-card bg-white rounded-2xl shadow-lg p-6 border border-primary/10" data-coupon-type="green" data-coupon-code="GREEN15">
+                    <div class="flex items-start justify-between gap-4">
+                        <div>
+                            <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Green Tag 🌿</p>
+                            <h3 class="text-4xl text-primary font-black text-display leading-none">-15%</h3>
+                            <p class="text-sm text-gray-600 mt-2">Chỉ áp dụng sản phẩm <b>Green</b></p>
+                        </div>
+                        <span class="bg-secondary text-primary text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest">Eco</span>
+                    </div>
+
+                    <div class="mt-4 bg-[#fcf8f5] rounded-xl p-4 border border-primary/10 flex items-center justify-between gap-3">
+                        <div>
+                            <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Mã</p>
+                            <p class="text-xl font-black text-primary tracking-widest">GREEN15</p>
+                        </div>
+                        <button data-copy-code="GREEN15" class="px-4 py-2 bg-primary text-white rounded-full text-[11px] font-black uppercase tracking-widest btn-hover transition">Sao chép</button>
+                    </div>
+
+                    <div class="mt-4 flex items-center justify-between text-[11px] text-gray-500">
+                        <span>HSD: 31/12/2026</span>
+                        <span>Không cộng dồn</span>
+                    </div>
+                    <p class="text-xs text-gray-600 mt-3">Khuyến khích tiêu dùng bền vững.</p>
+                </div>
+
+                <!-- 4 -->
+                <div class="coupon-code-box coupon-card bg-white rounded-2xl shadow-lg p-6 border border-primary/10" data-coupon-type="order" data-coupon-code="FESTIVAL20">
+                    <div class="flex items-start justify-between gap-4">
+                        <div>
+                            <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Giảm đơn hàng</p>
+                            <h3 class="text-4xl text-primary font-black text-display leading-none">-20%</h3>
+                            <p class="text-sm text-gray-600 mt-2">Đơn từ <b>700.000₫</b></p>
+                        </div>
+                        <span class="bg-secondary text-primary text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest">Limited</span>
+                    </div>
+
+                    <div class="mt-4 bg-[#fcf8f5] rounded-xl p-4 border border-primary/10 flex items-center justify-between gap-3">
+                        <div>
+                            <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Mã</p>
+                            <p class="text-xl font-black text-primary tracking-widest">FESTIVAL20</p>
+                        </div>
+                        <button data-copy-code="FESTIVAL20" class="px-4 py-2 bg-primary text-white rounded-full text-[11px] font-black uppercase tracking-widest btn-hover transition">Sao chép</button>
+                    </div>
+
+                    <div class="mt-4 flex items-center justify-between text-[11px] text-gray-500">
+                        <span>HSD: 01/09/2026</span>
+                        <span>Giới hạn lượt</span>
+                    </div>
+                    <p class="text-xs text-gray-600 mt-3">Ưu đãi theo mùa lễ hội – nhanh tay kẻo hết.</p>
+                </div>
+
+                <!-- 5 -->
+                <div class="coupon-code-box coupon-card bg-white rounded-2xl shadow-lg p-6 border border-primary/10" data-coupon-type="order" data-coupon-code="BATTRANG05">
+                    <div class="flex items-start justify-between gap-4">
+                        <div>
+                            <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Theo danh mục</p>
+                            <h3 class="text-4xl text-primary font-black text-display leading-none">-5%</h3>
+                            <p class="text-sm text-gray-600 mt-2">Gốm sứ / mây tre <b>(GOM)</b></p>
+                        </div>
+                        <span class="bg-primary text-white text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest">Craft</span>
+                    </div>
+
+                    <div class="mt-4 bg-[#fcf8f5] rounded-xl p-4 border border-primary/10 flex items-center justify-between gap-3">
+                        <div>
+                            <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Mã</p>
+                            <p class="text-xl font-black text-primary tracking-widest">BATTRANG05</p>
+                        </div>
+                        <button data-copy-code="BATTRANG05" class="px-4 py-2 bg-primary text-white rounded-full text-[11px] font-black uppercase tracking-widest btn-hover transition">Sao chép</button>
+                    </div>
+
+                    <div class="mt-4 flex items-center justify-between text-[11px] text-gray-500">
+                        <span>HSD: 31/12/2026</span>
+                        <span>Áp dụng chọn lọc</span>
+                    </div>
+                    <p class="text-xs text-gray-600 mt-3">Một chút ưu ái cho tinh hoa làng gốm.</p>
+                </div>
+
+                <!-- 6 -->
+                <div class="coupon-code-box coupon-card bg-white rounded-2xl shadow-lg p-6 border border-primary/10" data-coupon-type="order" data-coupon-code="LUA12">
+                    <div class="flex items-start justify-between gap-4">
+                        <div>
+                            <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Theo danh mục</p>
+                            <h3 class="text-4xl text-primary font-black text-display leading-none">-12%</h3>
+                            <p class="text-sm text-gray-600 mt-2">Lụa & Vải <b>(LUA)</b></p>
+                        </div>
+                        <span class="bg-secondary text-primary text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest">Best</span>
+                    </div>
+
+                    <div class="mt-4 bg-[#fcf8f5] rounded-xl p-4 border border-primary/10 flex items-center justify-between gap-3">
+                        <div>
+                            <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Mã</p>
+                            <p class="text-xl font-black text-primary tracking-widest">LUA12</p>
+                        </div>
+                        <button data-copy-code="LUA12" class="px-4 py-2 bg-primary text-white rounded-full text-[11px] font-black uppercase tracking-widest btn-hover transition">Sao chép</button>
+                    </div>
+
+                    <div class="mt-4 flex items-center justify-between text-[11px] text-gray-500">
+                        <span>HSD: 30/09/2026</span>
+                        <span>Không cộng dồn</span>
+                    </div>
+                    <p class="text-xs text-gray-600 mt-3">Dành cho “lụa – là – lụa” ✨</p>
+                </div>
+            </div>
+
+            <!-- Terms -->
+            <div class="mt-10 bg-white rounded-2xl shadow-lg p-6 border border-primary/10">
+                <h3 class="text-xl text-primary font-black text-display uppercase mb-3">Điều kiện sử dụng</h3>
+                <ul class="list-disc pl-5 space-y-2 text-sm text-gray-700">
+                    <li>Mỗi đơn hàng chỉ áp dụng tối đa <b>01 mã</b> (trừ khi có ghi chú khác).</li>
+                    <li>Mã có thể <b>hết hạn</b> hoặc <b>hết lượt</b> sử dụng trước ngày công bố.</li>
+                    <li>Freeship phụ thuộc khu vực giao hàng & đơn vị vận chuyển.</li>
+                </ul>
+            </div>
+        </main>
+
+
+        <!-- PAGE 4: VILLAGES PAGE -->
+        <main id="villages-page" class="hidden-page flex-grow container mx-auto px-4 py-8 max-w-7xl text-left">
+            <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-8 border-b-2 border-primary/20 pb-4">
+                <div>
+                    <h2 class="text-3xl font-bold text-primary text-display uppercase tracking-wider">Làng Nghề</h2>
+                    <p class="text-xs text-gray-500 mt-1 uppercase tracking-widest">Bản đồ tinh hoa – câu chuyện nghệ nhân – sản phẩm nguyên bản</p>
+                </div>
+                <div class="flex gap-3">
+                    <button onclick="showPage('home')" class="text-[10px] font-bold text-gray-400 hover:text-primary transition uppercase tracking-widest">← Về Trang Chủ</button>
+                    <button onclick="showPage('products')" class="text-[10px] font-bold text-gray-400 hover:text-primary transition uppercase tracking-widest">Sang Danh Mục →</button>
+                </div>
+            </div>
+
+            <!-- Hero -->
+            <section class="bg-white rounded-2xl shadow-2xl overflow-hidden border border-primary/10 mb-10">
+                <div class="grid grid-cols-1 lg:grid-cols-2">
+                    <div class="p-8 lg:p-10 flex flex-col justify-center">
+                        <h3 class="text-4xl text-primary font-black text-display mb-4">
+                            Mỗi làng nghề là một BẢO TÀNG SỐNG – Nơi thời gian ngưng đọng trong từng nhịp thở di sản.
+                        </h3>
+                        <p class="text-gray-700 leading-relaxed mb-4">
+                            Với sứ mệnh làm cầu nối giữa quá khứ và tương lai, VietSoul trân trọng đồng hành cùng các làng nghề để kể lại câu chuyện di sản qua một lăng kính hoàn toàn mới: nơi sự hiện đại hòa quyện vào những giá trị truyền thống, giúp các sản phẩm thủ công sở hữu hơi thở đương đại và hiện diện tự nhiên trong không gian sống của thế kỷ 21.
+                        </p>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="px-4 py-2 rounded-full bg-secondary text-primary text-[11px] font-black uppercase tracking-widest">Gốm</span>
+                            <span class="px-4 py-2 rounded-full bg-secondary text-primary text-[11px] font-black uppercase tracking-widest">Lụa</span>
+                            <span class="px-4 py-2 rounded-full bg-secondary text-primary text-[11px] font-black uppercase tracking-widest">Tranh</span>
+                            <span class="px-4 py-2 rounded-full bg-secondary text-primary text-[11px] font-black uppercase tracking-widest">Mộc</span>
+                        </div>
+                    </div>
+                    <div class="h-72 lg:h-auto overflow-hidden">
+                        <img src="https://ik.imagekit.io/tvlk/blog/2023/07/lang-may-tre-dan-phu-vinh-3-1024x683.png?tr=dpr-2,w-675"
+                             alt="Làng nghề Việt Nam"
+                             class="w-full h-full object-cover"
+                             onerror="this.onerror=null;this.src='https://placehold.co/1200x700/8B0000/FFF8E1?text=LÀNG+NGHỀ+VIỆT+NAM';">
+                    </div>
+                </div>
+            </section>
+
+            <!-- Village Cards -->
+            <section>
+                <h3 class="text-2xl text-primary font-black text-display uppercase mb-4">Làng nghề nổi bật</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+                    <!-- Bat Trang -->
+                    <div class="bg-white rounded-2xl shadow-xl overflow-hidden border border-primary/5 group">
+                        <div class="h-44 overflow-hidden">
+                            <img src="https://battrang.vn/FileUpload/Images/langgombattrang.jpg"
+                                 alt="Bát Tràng"
+                                 class="w-full h-full object-cover transition duration-500 group-hover:scale-105"
+                                 onerror="this.onerror=null;this.src='https://placehold.co/800x600/4A90E2/FFF8E1?text=BÁT+TRÀNG';">
+                        </div>
+                        <div class="p-5">
+                            <p class="text-[10px] text-gray-400 uppercase tracking-widest font-bold mb-1">Miền Bắc • Hà Nội</p>
+                            <h4 class="text-xl font-black text-primary text-display uppercase mb-2">Gốm Bát Tràng</h4>
+                            <p class="text-sm text-gray-600 mb-4">Gốm sứ nung chuẩn, tinh xảo, bền đẹp theo thời gian.</p>
+                            <button data-goto-filter="gom" class="w-full px-5 py-2 bg-primary text-white rounded-full text-[11px] font-black uppercase tracking-widest btn-hover transition">
+                                Xem sản phẩm
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Van Phuc -->
+                    <div class="bg-white rounded-2xl shadow-xl overflow-hidden border border-primary/5 group">
+                        <div class="h-44 overflow-hidden">
+                            <img src="https://image.vietgoing.com/destination/vietgoing_wpp2106119383.webp"
+                                 alt="Vạn Phúc"
+                                 class="w-full h-full object-cover transition duration-500 group-hover:scale-105"
+                                 onerror="this.onerror=null;this.src='https://placehold.co/800x600/A0522D/FFF8E1?text=VẠN+PHÚC';">
+                        </div>
+                        <div class="p-5">
+                            <p class="text-[10px] text-gray-400 uppercase tracking-widest font-bold mb-1">Miền Bắc • Hà Nội</p>
+                            <h4 class="text-xl font-black text-primary text-display uppercase mb-2">Lụa Vạn Phúc</h4>
+                            <p class="text-sm text-gray-600 mb-4">Sợi tơ tằm mềm mại, hoa văn sang, tinh thần Việt.</p>
+                            <button data-goto-filter="lua" class="w-full px-5 py-2 bg-primary text-white rounded-full text-[11px] font-black uppercase tracking-widest btn-hover transition">
+                                Xem sản phẩm
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Dong Ho -->
+                    <div class="bg-white rounded-2xl shadow-xl overflow-hidden border border-primary/5 group">
+                        <div class="h-44 overflow-hidden">
+                            <img src="https://mia.vn/media/uploads/blog-du-lich/lang-tranh-dong-ho-8-1700909190.jpg"
+                                 alt="Đông Hồ"
+                                 class="w-full h-full object-cover transition duration-500 group-hover:scale-105"
+                                 onerror="this.onerror=null;this.src='https://placehold.co/800x600/8B4513/FFF8E1?text=ĐÔNG+HỒ';">
+                        </div>
+                        <div class="p-5">
+                            <p class="text-[10px] text-gray-400 uppercase tracking-widest font-bold mb-1">Miền Bắc • Bắc Ninh</p>
+                            <h4 class="text-xl font-black text-primary text-display uppercase mb-2">Tranh Đông Hồ</h4>
+                            <p class="text-sm text-gray-600 mb-4">Mực in – giấy điệp – nét khắc: hồn dân gian Việt.</p>
+                            <button data-goto-filter="tranh" class="w-full px-5 py-2 bg-primary text-white rounded-full text-[11px] font-black uppercase tracking-widest btn-hover transition">
+                                Xem sản phẩm
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Kim Bong -->
+                    <div class="bg-white rounded-2xl shadow-xl overflow-hidden border border-primary/5 group">
+                        <div class="h-44 overflow-hidden">
+                            <img src="https://vinwondershoian.com/userfiles/image/hoian-danang/2020/moc-kim-bong/lang-moc-kim-dong-o-hoi-an-01.jpg"
+                                 alt="Kim Bồng"
+                                 class="w-full h-full object-cover transition duration-500 group-hover:scale-105"
+                                 onerror="this.onerror=null;this.src='https://placehold.co/800x600/8B4513/FFF8E1?text=KIM+BỒNG';">
+                        </div>
+                        <div class="p-5">
+                            <p class="text-[10px] text-gray-400 uppercase tracking-widest font-bold mb-1">Miền Trung • Hội An</p>
+                            <h4 class="text-xl font-black text-primary text-display uppercase mb-2">Mộc Kim Bồng</h4>
+                            <p class="text-sm text-gray-600 mb-4">Chạm khắc thủ công – tinh thần tâm linh – bền vững.</p>
+                            <button data-goto-filter="dotuong" class="w-full px-5 py-2 bg-primary text-white rounded-full text-[11px] font-black uppercase tracking-widest btn-hover transition">
+                                Xem sản phẩm
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Map (light) -->
+            <section class="mt-12 bg-white rounded-2xl shadow-2xl overflow-hidden border border-primary/10">
+                <div class="grid grid-cols-1 lg:grid-cols-2">
+                    <div class="p-8 lg:p-10">
+                        <h3 class="text-2xl text-primary font-black text-display uppercase mb-3">HÀNH TRÌNH LAN TOẢ</h3>
+                        <ol class="space-y-3 text-sm text-gray-700">
+                            <li class="flex gap-3"><span class="text-primary font-black">01.</span> Miền Bắc – Hồn cốt ngàn năm: Khởi đầu từ những lò gốm rực lửa tại Bát Tràng, ghé thăm sắc lụa óng ả của Vạn Phúc, rồi lắng mình trong những nét khắc dân gian đậm chất hoài cổ của Đông Hồ.</li>
+                            <li class="flex gap-3"><span class="text-primary font-black">02.</span> Miền Trung – Tinh hoa xứ sở: Về với cố đô Huế cổ kính cùng tranh Làng Sình, tìm lại sự mộc mạc nơi mộc Kim Bồng (Hội An) và thắp sáng những giá trị truyền thống tại Làng đèn lồng phố Hội.</li>
+                            <li class="flex gap-3"><span class="text-primary font-black">03.</span> Miền Nam – Nhịp sống bền vững: Điểm kết của hành trình là sự kết nối đầy nhân văn với các xưởng thủ công xã hội và những dự án xanh, nơi di sản hòa mình vào dòng chảy bảo vệ môi trường và cộng đồng.</li>
+                        </ol>
+                        <p class="text-xs text-gray-500 mt-5 italic border-l-4 border-secondary pl-4">
+                            “Hãy cùng VietSoul bước vào hành trình đi để thấu hiểu những giá trị nghìn năm đang kết tinh trong từng thớ đất, sợi tơ; để từ sự thấu hiểu đó, ta học cách trân trọng hơn đôi bàn tay tài hoa và trái tim đầy nhiệt huyết của người nghệ nhân Việt. Bởi chỉ khi lòng trân trọng đủ lớn, chúng ta mới có thể cùng nhau thắp sáng và lan tỏa những câu chuyện di sản, đưa hồn dân tộc vươn xa trong nhịp sống đương đại.”
+                        </p>
+                    </div>
+                    <div class="bg-primary/90 p-4 flex items-center justify-center">
+                        <img src="https://sackim.com/wp-content/uploads/2022/04/hinh-anh-ban-do-viet-nam-vector-03.jpg"
+                             alt="Bản đồ Việt Nam"
+                             class="w-full h-full object-contain opacity-90"
+                             onerror="this.onerror=null;this.src='https://placehold.co/900x700/4A90E2/FFF8E1?text=BẢN+ĐỒ+VIỆT+NAM';"
+                             style="max-height: 420px;">
+                    </div>
+                </div>
+            </section>
+        </main>
+
+
+        <!-- PAGE 5: CUSTOMER SUPPORT PAGE -->
+        <main id="support-page" class="hidden-page flex-grow container mx-auto px-4 py-8 max-w-7xl text-left">
+            <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-8 border-b-2 border-primary/20 pb-4">
+                <div>
+                    <h2 class="text-3xl font-bold text-primary text-display uppercase tracking-wider">Chăm sóc khách hàng</h2>
+                    <p class="text-xs text-gray-500 mt-1 uppercase tracking-widest">
+                        Mã khách truy cập:
+                        <span id="user-id-display" class="text-primary font-black"></span>
+                    </p>
+                </div>
+                <div class="flex gap-3">
+                    <button onclick="showPage('home')" class="text-[10px] font-bold text-gray-400 hover:text-primary transition uppercase tracking-widest">← Về Trang Chủ</button>
+                    <button onclick="showPage('products')" class="text-[10px] font-bold text-gray-400 hover:text-primary transition uppercase tracking-widest">Sang Danh Mục →</button>
+                </div>
+            </div>
+
+            <section class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                <!-- Left: Quick actions -->
+                <div class="lg:col-span-5 space-y-6">
+                    <div class="bg-white rounded-2xl shadow-lg p-6 border border-primary/10">
+                        <h3 class="text-xl text-primary font-black text-display uppercase mb-4">Kênh hỗ trợ nhanh</h3>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div class="rounded-xl border border-primary/10 p-4 bg-[#fcf8f5]">
+                                <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-1">Hotline</p>
+                                <p class="text-primary font-black text-lg">1900 123 456</p>
+                                <p class="text-xs text-gray-600 mt-1">08:00 – 22:00 mỗi ngày</p>
+                            </div>
+                            <div class="rounded-xl border border-primary/10 p-4 bg-[#fcf8f5]">
+                                <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-1">Email</p>
+                                <p class="text-primary font-black text-lg">support@vietsoul.vn</p>
+                                <p class="text-xs text-gray-600 mt-1">Phản hồi trong 24h</p>
+                            </div>
+                            <div class="rounded-xl border border-primary/10 p-4 bg-[#fcf8f5]">
+                                <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-1">Chat</p>
+                                <p class="text-primary font-black text-lg">VietSoul AI</p>
+                                <p class="text-xs text-gray-600 mt-1">Hỗ trợ câu chuyện sản phẩm</p>
+                            </div>
+                            <div class="rounded-xl border border-primary/10 p-4 bg-[#fcf8f5]">
+                                <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-1">Tra cứu đơn</p>
+                                <div class="flex mt-2">
+                                    <input type="text" placeholder="Nhập mã đơn (VD: VS123...)" class="w-full p-2 rounded-l-lg border border-primary/10 text-sm">
+                                    <button class="px-4 rounded-r-lg bg-primary text-white font-black text-[11px] uppercase tracking-widest btn-hover transition">Tra</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-2xl shadow-lg p-6 border border-primary/10">
+                        <h3 class="text-xl text-primary font-black text-display uppercase mb-4">Câu hỏi thường gặp (FAQ)</h3>
+
+                        <details class="group border border-primary/10 rounded-xl p-4 mb-3 bg-[#fcf8f5]">
+                            <summary class="cursor-pointer font-bold text-primary flex items-center justify-between">
+                                Chính sách đổi trả như thế nào?
+                                <span class="group-open:rotate-180 transition">▾</span>
+                            </summary>
+                            <p class="text-sm text-gray-700 mt-3 leading-relaxed">
+                                Bạn có thể yêu cầu đổi/trả nếu sản phẩm lỗi do vận chuyển hoặc sai mô tả. Vui lòng giữ nguyên tình trạng sản phẩm và liên hệ CSKH để được hướng dẫn.
+                            </p>
+                        </details>
+
+                        <details class="group border border-primary/10 rounded-xl p-4 mb-3 bg-[#fcf8f5]">
+                            <summary class="cursor-pointer font-bold text-primary flex items-center justify-between">
+                                Làm sao áp dụng mã giảm giá?
+                                <span class="group-open:rotate-180 transition">▾</span>
+                            </summary>
+                            <p class="text-sm text-gray-700 mt-3 leading-relaxed">
+                                Bạn vào trang <b>Mã giảm giá</b>, bấm <b>Sao chép</b> rồi dán ở bước thanh toán. Mỗi đơn thường áp dụng 1 mã.
+                            </p>
+                        </details>
+
+                        <details class="group border border-primary/10 rounded-xl p-4 bg-[#fcf8f5]">
+                            <summary class="cursor-pointer font-bold text-primary flex items-center justify-between">
+                                Green Tag là gì?
+                                <span class="group-open:rotate-180 transition">▾</span>
+                            </summary>
+                            <p class="text-sm text-gray-700 mt-3 leading-relaxed">
+                                Green Tag là nhãn thể hiện sản phẩm có yếu tố bền vững (nguyên liệu, quy trình, bao bì, vận chuyển…). Bạn có thể bật lọc “Green Tag 🌿” trong Danh mục.
+                            </p>
+                        </details>
+                    </div>
+                </div>
+
+                <!-- Right: Form -->
+                <div class="lg:col-span-7">
+                    <div class="bg-white rounded-2xl shadow-2xl p-8 border border-primary/10">
+                        <h3 class="text-2xl text-primary font-black text-display uppercase mb-2">Gửi yêu cầu hỗ trợ</h3>
+                        <p class="text-sm text-gray-600 mb-6">Điền thông tin, đội CSKH sẽ phản hồi sớm nhất có thể.</p>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Họ tên</label>
+                                <input type="text" class="mt-2 w-full p-3 rounded-xl border border-primary/10 focus:ring-2 focus:ring-secondary text-sm" placeholder="Nguyễn Văn A">
+                            </div>
+                            <div>
+                                <label class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Email</label>
+                                <input type="email" class="mt-2 w-full p-3 rounded-xl border border-primary/10 focus:ring-2 focus:ring-secondary text-sm" placeholder="email@domain.com">
+                            </div>
+                            <div>
+                                <label class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Mã đơn (nếu có)</label>
+                                <input type="text" class="mt-2 w-full p-3 rounded-xl border border-primary/10 focus:ring-2 focus:ring-secondary text-sm" placeholder="VS123456">
+                            </div>
+                            <div>
+                                <label class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Chủ đề</label>
+                                <select class="mt-2 w-full p-3 rounded-xl border border-primary/10 focus:ring-2 focus:ring-secondary text-sm">
+                                    <option>Đổi/Trả</option>
+                                    <option>Thanh toán</option>
+                                    <option>Vận chuyển</option>
+                                    <option>Mã giảm giá</option>
+                                    <option>Khác</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="mt-4">
+                            <label class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Nội dung</label>
+                            <textarea rows="6" class="mt-2 w-full p-3 rounded-xl border border-primary/10 focus:ring-2 focus:ring-secondary text-sm" placeholder="Mô tả vấn đề bạn đang gặp..."></textarea>
+                        </div>
+
+                        <button class="mt-6 w-full bg-primary text-white font-black py-4 rounded-xl hover:shadow-2xl transition uppercase font-heading tracking-widest text-sm btn-hover">
+                            Gửi yêu cầu
+                        </button>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- PAGE 6: LOGIN PAGE -->
+        <main id="login-page" class="hidden-page flex-grow container mx-auto px-4 py-8 max-w-7xl text-left">
+        <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-8 border-b-2 border-primary/20 pb-4">
+            <div>
+            <h2 class="text-3xl font-bold text-primary text-display uppercase tracking-wider">Đăng nhập</h2>
+            <p class="text-xs text-gray-500 mt-1 uppercase tracking-widest">Chào mừng bạn quay lại VietSoul</p>
+            </div>
+            <div class="flex gap-3">
+            <button onclick="showPage('home')" class="text-[10px] font-bold text-gray-400 hover:text-primary transition uppercase tracking-widest">← Về Trang Chủ</button>
+            <button onclick="showPage('register')" class="text-[10px] font-bold text-gray-400 hover:text-primary transition uppercase tracking-widest">Chưa có tài khoản?</button>
+            </div>
+        </div>
+
+        <section class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <!-- Left content -->
+            <div class="lg:col-span-5 bg-white rounded-2xl shadow-lg p-6 sm:p-8 border border-primary/10">
+            <h3 class="text-2xl text-primary font-black text-display uppercase mb-3">Quyền lợi thành viên</h3>
+            <ul class="space-y-3 text-sm text-gray-700">
+                <li class="flex gap-2"><span class="text-primary font-black">✓</span> Lưu sản phẩm yêu thích & lịch sử mua hàng</li>
+                <li class="flex gap-2"><span class="text-primary font-black">✓</span> Nhận mã giảm giá riêng cho thành viên</li>
+                <li class="flex gap-2"><span class="text-primary font-black">✓</span> Theo dõi đơn hàng nhanh chóng</li>
+            </ul>
+            <div class="mt-6 p-4 rounded-xl bg-[#fcf8f5] border border-primary/10">
+                <p class="text-xs text-gray-600 italic">
+                “Mỗi lần đăng nhập là một lần bạn giúp chúng mình tiếp tục hành trình kể chuyện di sản Việt.”
+                </p>
+            </div>
+            </div>
+
+            <!-- Right form -->
+            <div class="lg:col-span-7">
+            <div class="bg-white rounded-2xl shadow-2xl p-6 sm:p-8 border border-primary/10">
+                <form id="login-form" class="space-y-4">
+                <div>
+                    <label class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Email / Số điện thoại</label>
+                    <input required autocomplete="username"
+                        class="mt-2 w-full p-3 rounded-xl border border-primary/10 focus:ring-2 focus:ring-secondary text-sm"
+                        placeholder="vd: email@domain.com hoặc 09xxxxxxx">
+                </div>
+
+                <div>
+                    <label class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Mật khẩu</label>
+                    <input required type="password" autocomplete="current-password"
+                        class="mt-2 w-full p-3 rounded-xl border border-primary/10 focus:ring-2 focus:ring-secondary text-sm"
+                        placeholder="••••••••">
+                </div>
+
+                <div class="flex items-center justify-between text-sm">
+                    <label class="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" class="rounded text-primary focus:ring-primary">
+                    <span class="text-gray-700">Ghi nhớ</span>
+                    </label>
+                    <button type="button" class="text-primary font-bold hover:underline">Quên mật khẩu?</button>
+                </div>
+
+                <button type="submit"
+                        class="w-full bg-primary text-white font-black py-4 rounded-xl hover:shadow-2xl transition uppercase font-heading tracking-widest text-sm btn-hover">
+                    Đăng nhập
+                </button>
+
+                <p class="text-xs text-gray-500 text-center mt-4">
+                    Bạn chưa có tài khoản?
+                    <a href="javascript:void(0)" onclick="showPage('register')" class="text-primary font-black hover:underline">Đăng ký ngay</a>
+                </p>
+                </form>
+            </div>
+            </div>
+        </section>
+        </main>
+
+        <!-- PAGE 7: REGISTER PAGE -->
+        <main id="register-page" class="hidden-page flex-grow container mx-auto px-4 py-8 max-w-7xl text-left">
+        <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-8 border-b-2 border-primary/20 pb-4">
+            <div>
+            <h2 class="text-3xl font-bold text-primary text-display uppercase tracking-wider">Đăng ký</h2>
+            <p class="text-xs text-gray-500 mt-1 uppercase tracking-widest">Tạo tài khoản VietSoul chỉ trong 1 phút</p>
+            </div>
+            <div class="flex gap-3">
+            <button onclick="showPage('home')" class="text-[10px] font-bold text-gray-400 hover:text-primary transition uppercase tracking-widest">← Về Trang Chủ</button>
+            <button onclick="showPage('login')" class="text-[10px] font-bold text-gray-400 hover:text-primary transition uppercase tracking-widest">Đã có tài khoản?</button>
+            </div>
+        </div>
+
+        <section class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <div class="lg:col-span-5 bg-white rounded-2xl shadow-lg p-6 sm:p-8 border border-primary/10">
+            <h3 class="text-2xl text-primary font-black text-display uppercase mb-3">Tham gia cộng đồng</h3>
+            <p class="text-sm text-gray-700 leading-relaxed">
+                Trở thành thành viên VietSoul để đồng hành cùng nghệ nhân, nhận ưu đãi và khám phá những câu chuyện văn hoá được cá nhân hoá theo gu của bạn.
+            </p>
+            <div class="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="p-4 rounded-xl bg-[#fcf8f5] border border-primary/10">
+                <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-1">Ưu đãi</p>
+                <p class="text-sm text-gray-700">Voucher riêng & Flash Sale</p>
+                </div>
+                <div class="p-4 rounded-xl bg-[#fcf8f5] border border-primary/10">
+                <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-1">Cá nhân hoá</p>
+                <p class="text-sm text-gray-700">Gợi ý đúng sở thích</p>
+                </div>
+            </div>
+            </div>
+
+            <div class="lg:col-span-7">
+            <div class="bg-white rounded-2xl shadow-2xl p-6 sm:p-8 border border-primary/10">
+                <form id="register-form" class="space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                    <label class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Họ tên</label>
+                    <input required autocomplete="name"
+                            class="mt-2 w-full p-3 rounded-xl border border-primary/10 focus:ring-2 focus:ring-secondary text-sm"
+                            placeholder="Nguyễn Văn A">
+                    </div>
+                    <div>
+                    <label class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Số điện thoại</label>
+                    <input autocomplete="tel"
+                            class="mt-2 w-full p-3 rounded-xl border border-primary/10 focus:ring-2 focus:ring-secondary text-sm"
+                            placeholder="09xxxxxxxx">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Email</label>
+                    <input required type="email" autocomplete="email"
+                        class="mt-2 w-full p-3 rounded-xl border border-primary/10 focus:ring-2 focus:ring-secondary text-sm"
+                        placeholder="email@domain.com">
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                    <label class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Mật khẩu</label>
+                    <input required type="password" autocomplete="new-password"
+                            class="mt-2 w-full p-3 rounded-xl border border-primary/10 focus:ring-2 focus:ring-secondary text-sm"
+                            placeholder="Tối thiểu 8 ký tự">
+                    </div>
+                    <div>
+                    <label class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Nhập lại</label>
+                    <input required type="password" autocomplete="new-password"
+                            class="mt-2 w-full p-3 rounded-xl border border-primary/10 focus:ring-2 focus:ring-secondary text-sm"
+                            placeholder="Nhập lại mật khẩu">
+                    </div>
+                </div>
+
+                <label class="flex items-start gap-2 text-sm text-gray-700 cursor-pointer">
+                    <input required type="checkbox" class="mt-1 rounded text-primary focus:ring-primary">
+                    <span>Tôi đồng ý với <b>Điều khoản</b> và <b>Chính sách</b> của VietSoul.</span>
+                </label>
+
+                <button type="submit"
+                        class="w-full bg-primary text-white font-black py-4 rounded-xl hover:shadow-2xl transition uppercase font-heading tracking-widest text-sm btn-hover">
+                    Tạo tài khoản
+                </button>
+
+                <p class="text-xs text-gray-500 text-center mt-4">
+                    Đã có tài khoản?
+                    <a href="javascript:void(0)" onclick="showPage('login')" class="text-primary font-black hover:underline">Đăng nhập</a>
+                </p>
+                </form>
+            </div>
+            </div>
+        </section>
+        </main>
+
+
     </div>
 
     <!-- FOOTER -->
@@ -637,7 +1375,7 @@ Chúng tôi không chỉ bán những sản phẩm thủ công; chúng tôi đan
         </footer>
 
     <!-- SIDEBAR DETAIL -->
-    <div id="detail-sidebar" class="fixed inset-y-0 right-0 w-full md:w-[450px] bg-white shadow-2xl z-[60] transform translate-x-full transition-transform duration-500 overflow-y-auto p-8 flex flex-col text-left">
+    <div id="detail-sidebar" class="fixed inset-y-0 right-0 w-full md:w-[450px] bg-white shadow-2xl z-[60] transform translate-x-full transition-transform duration-500 overflow-y-auto p-4 sm:p-8 flex flex-col text-left">
         <div class="flex justify-between items-center border-b border-primary/10 pb-4 mb-6">
             <h3 class="text-2xl font-bold text-primary text-display uppercase">Chi tiết sản phẩm</h3>
             <button id="close-sidebar-btn" class="text-gray-300 hover:text-red-600 transition text-2xl">❌</button>
@@ -671,7 +1409,7 @@ Chúng tôi không chỉ bán những sản phẩm thủ công; chúng tôi đan
     <script type="module">
         const allProducts = [
             { id: 1, name: "Tranh Đông Hồ 'Mục Đồng'", description: "Tranh Gỗ Sơn Mài | Làng Sình", price: "150.000", sold: "987", category: "tranh", location: "Hà Nội", artist: "Nguyễn Văn B", isGreen: true, img: "https://noithatbinhminh.com.vn/wp-content/uploads/2021/11/tranh-dong-ho-06.jpg", fallback: "https://placehold.co/600x400/8B0000/FFF8E1?text=Tranh+Đông+Hồ", tags: ["Mực in sinh học", "Bao bì Kraft tái chế", "Eco-Delivery"], story: "Tranh Mục Đồng cưỡi trâu thổi sáo thể hiện cảnh thái bình. Nghệ nhân B đã khắc gỗ hơn 50 năm để tạo ra bản in này." },
-            { id: 2, name: "Áo Dài Lụa Tơ Tằm", description: "Chất liệu Tơ Tằm cao cấp | Vạn Phúc", price: "500.000", sold: "2346", category: "lua", location: "Hà Nội", artist: "HTX Vạn Phúc", isGreen: true, img: "https://tse3.mm.bing.net/th/id/OIP.lhv8Zf1PwAa9LOToaNPNFgHaJ4?cb=ucfimg2&ucfimg=1&w=2250&h=3000&rs=1&pid=ImgDetMain&o=7&rm=3", fallback: "https://placehold.co/600x400/A0522D/FFF8E1?text=Áo+Dài+Lụa", tags: ["Tơ tằm tự nhiên", "Dệt tay truyền thống"], story: "Lụa Vạn Phúc mướt nhẹ, nhuộm từ lá cây tự nhiên, là biểu tượng của sự thanh cao phụ nữ Việt." },
+            { id: 2, name: "Áo Dài Lụa Tơ Tằm", description: "Chất liệu Tơ Tằm cao cấp | Vạn Phúc", price: "500.000", sold: "2346", category: "lua", location: "Hà Nội", artist: "HTX Vạn Phúc", isGreen: true, img: "https://i.pinimg.com/originals/f2/16/6c/f2166c45c2807cf7c81847aa39047c57.jpg", fallback: "https://placehold.co/600x400/A0522D/FFF8E1?text=Áo+Dài+Lụa", tags: ["Tơ tằm tự nhiên", "Dệt tay truyền thống"], story: "Lụa Vạn Phúc mướt nhẹ, nhuộm từ lá cây tự nhiên, là biểu tượng của sự thanh cao phụ nữ Việt." },
             { id: 3, name: "Khăn Choàng Thổ Cẩm", description: "Họa tiết đẹp | Lụa Gia Lai", price: "250.000", sold: "6785", category: "lua", location: "Gia Lai", artist: "Sắc Việt", isGreen: true, img: "https://chus.vn/images/detailed/241/10038_34_F1.jpg", fallback: "https://placehold.co/600x400/B8860B/FFF8E1?text=Khăn+Lụa", tags: ["Thêu tay thủ công", "Bao bì tái chế"], story: "Chim công đại diện cho sự quyền quý. Khăn được thêu tay tỉ mỉ bởi các nghệ nhân trẻ tại Lâm Đồng." },
             { id: 4, name: "Hoa giấy Thanh Tiên", description: "Hoa giấy truyền thống lâu đời | Huế", price: "100.000", sold: "1005", category: "gift", location: "Huế", artist: "Làng Thanh Tiên", isGreen: true, img: "https://dulichtudo.vn/wp-content/uploads/2021/03/3-lang-nghe-hoa-giay-thanh-tien-768x512.jpg", fallback: "https://placehold.co/600x400/FF6B35/FFF8E1?text=Hoa+Giấy", tags: ["Giấy tre nhuộm màu thực vật"], story: "Hoa giấy Thanh Tiên rực rỡ, không tàn, là niềm tự hào của vùng đất Cố đô Huế." },
             { id: 5, name: "Gốm Sứ Bát Tràng", description: "Bộ ấm chén cao cấp | Bát Tràng", price: "600.000", sold: "567", category: "gom", location: "Hà Nội", artist: "HTX Bát Tràng", isGreen: true, img: "https://images.squarespace-cdn.com/content/v1/5ef75ab2b9e1265aaf984ec3/fb7790c5-bf44-4aa3-909d-1016088707c2/Porcelain+faceted.bowls+with+markings.jpeg", fallback: "https://placehold.co/600x400/4A90E2/FFF8E1?text=Gốm+Bát+Tràng", tags: ["Đất sét tự nhiên", "Nung tiết kiệm điện"], story: "Ấm chén được nung ở 1200 độ C, loại bỏ chì và độc tố, giữ trọn hương vị trà xanh Việt." },
@@ -894,5 +1632,160 @@ Chúng tôi không chỉ bán những sản phẩm thủ công; chúng tôi đan
             document.getElementById('user-id-display').textContent = `ID: GUEST_${Math.random().toString(36).substring(7).toUpperCase()}`;
         });
     </script>
+    <script type="module">
+        (() => {
+        // 1) Nối thêm showPage mà KHÔNG đụng code cũ
+        const baseShowPage = window.showPage;
+
+        if (typeof baseShowPage === 'function') {
+            window.showPage = (pageId) => {
+            // giữ nguyên hành vi cũ (home/products + scroll + renderMarketplace)
+            baseShowPage(pageId);
+            document.getElementById('detail-sidebar')?.classList.add('translate-x-full');
+
+            // thêm 3 trang mới
+            const extraPages = [
+                { key: 'coupons', id: 'coupons-page' },
+                { key: 'villages', id: 'villages-page' },
+                { key: 'support', id: 'support-page' },
+                { key: 'login', id: 'login-page' },
+                { key: 'register', id: 'register-page' },
+            ];
+
+            extraPages.forEach(p => {
+                const el = document.getElementById(p.id);
+                if (el) el.classList.toggle('hidden-page', pageId !== p.key);
+            });
+            };
+        }
+
+        // 2) Hook click menu (3 menu đang href="#")
+        document.addEventListener('DOMContentLoaded', () => {
+            const map = {
+            'Mã giảm giá': 'coupons',
+            'Làng nghề': 'villages',
+            'Chăm sóc khách hàng': 'support'
+            };
+
+            document.querySelectorAll('header nav a').forEach(a => {
+            const t = (a.textContent || '').trim();
+            if (map[t]) {
+                a.addEventListener('click', (e) => {
+                e.preventDefault();
+                window.showPage(map[t]);
+                });
+
+            document.getElementById('login-form')?.addEventListener('submit', (e) => {
+            e.preventDefault();
+            // demo: về trang chủ
+            window.showPage('home');
+            });
+
+            document.getElementById('register-form')?.addEventListener('submit', (e) => {
+            e.preventDefault();
+            // demo: chuyển qua login
+            window.showPage('login');
+            });
+            }
+            });
+
+            // 3) Copy mã giảm giá + toast
+            const toast = document.getElementById('vs-toast');
+            const showToast = (msg) => {
+            if (!toast) return;
+            toast.textContent = msg;
+            toast.classList.remove('hidden');
+            clearTimeout(toast._t);
+            toast._t = setTimeout(() => toast.classList.add('hidden'), 1600);
+            };
+
+            document.querySelectorAll('[data-copy-code]').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                e.preventDefault();
+                const code = btn.getAttribute('data-copy-code') || '';
+                if (!code) return;
+
+                try {
+                await navigator.clipboard.writeText(code);
+                } catch {
+                // fallback
+                const tmp = document.createElement('textarea');
+                tmp.value = code;
+                tmp.style.position = 'fixed';
+                tmp.style.left = '-9999px';
+                document.body.appendChild(tmp);
+                tmp.select();
+                document.execCommand('copy');
+                document.body.removeChild(tmp);
+                }
+                showToast(`Đã sao chép: ${code}`);
+            });
+            });
+
+            // 4) Từ trang Làng nghề -> qua Danh mục + bật đúng filter
+            document.querySelectorAll('[data-goto-filter]').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const filter = btn.getAttribute('data-goto-filter') || 'all';
+                window.showPage('products');
+
+                setTimeout(() => {
+                const fbtn = document.querySelector(`.filter-btn[data-filter="${filter}"]`);
+                if (fbtn) fbtn.click();
+                }, 80);
+            });
+            });
+
+            // 5) Lọc/search coupon đơn giản (ẩn/hiện card)
+            let activeType = 'all';
+            const searchInput = document.getElementById('coupon-search');
+            const searchBtn = document.getElementById('coupon-search-btn');
+
+            const applyCouponFilter = () => {
+            const q = ((searchInput?.value || '').trim()).toUpperCase();
+            const cards = document.querySelectorAll('.coupon-card');
+
+            cards.forEach(card => {
+                const type = card.getAttribute('data-coupon-type') || 'all';
+                const code = (card.getAttribute('data-coupon-code') || '').toUpperCase();
+                const text = (card.textContent || '').toUpperCase();
+
+                const okType = activeType === 'all' || type === activeType;
+                const okText = !q || code.includes(q) || text.includes(q);
+
+                card.classList.toggle('hidden', !(okType && okText));
+            });
+            };
+
+            // set active style for coupon filter buttons
+            const couponFilterBtns = document.querySelectorAll('.coupon-filter-btn');
+            const setActiveBtn = (btn) => {
+            couponFilterBtns.forEach(b => b.classList.remove('bg-primary', 'text-white'));
+            btn.classList.add('bg-primary', 'text-white');
+            };
+
+            couponFilterBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                activeType = btn.getAttribute('data-coupon-filter') || 'all';
+                setActiveBtn(btn);
+                applyCouponFilter();
+            });
+            });
+
+            if (couponFilterBtns[0]) setActiveBtn(couponFilterBtns[0]);
+
+            searchBtn?.addEventListener('click', applyCouponFilter);
+            searchInput?.addEventListener('keyup', (e) => {
+            if (e.key === 'Enter') applyCouponFilter();
+            else applyCouponFilter();
+            });
+        });
+        })();
+        </script>
+
+    <!-- TOAST (copy coupon) -->
+    <div id="vs-toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-primary text-white px-5 py-2 rounded-full shadow-2xl text-sm font-bold tracking-wide hidden z-[999]">
+    </div>
+
 </body>
 </html>
