@@ -1,0 +1,733 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Bản Đồ Làng Nghề Việt Nam — VietSoul</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    :root {
+      --red:    #8B0000;
+      --gold:   #C8960C;
+      --cream:  #FFF8E1;
+      --ivory:  #FAF5E4;
+      --ink:    #1a0f00;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--ivory);
+      font-family: 'Be Vietnam Pro', sans-serif;
+      color: var(--ink);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── Noise texture overlay ── */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none; z-index: 0; opacity: 0.5;
+    }
+
+    /* ── Header ── */
+    .site-header {
+      position: relative; z-index: 10;
+      background: var(--red);
+      padding: 14px 28px;
+      display: flex; align-items: center; justify-content: space-between;
+      box-shadow: 0 4px 24px rgba(139,0,0,0.3);
+    }
+    .logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 22px; font-weight: 900;
+      color: var(--cream);
+      letter-spacing: 0.04em;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .logo span { color: var(--gold); }
+    .back-btn {
+      font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.7);
+      text-decoration: none; letter-spacing: 0.1em; text-transform: uppercase;
+      padding: 6px 16px; border: 1px solid rgba(255,255,255,0.25);
+      border-radius: 999px; transition: all .2s;
+    }
+    .back-btn:hover { background: rgba(255,255,255,0.1); color: white; }
+
+    /* ── Layout ── */
+    .app {
+      position: relative; z-index: 1;
+      display: grid;
+      grid-template-columns: 1fr 420px;
+      gap: 0;
+      height: calc(100vh - 56px);
+    }
+    @media (max-width: 1024px) {
+      .app { grid-template-columns: 1fr; grid-template-rows: 55vh 1fr; height: auto; }
+    }
+
+    /* ── Map ── */
+    #map {
+      width: 100%; height: 100%;
+      z-index: 1;
+    }
+    .map-wrapper {
+      position: relative;
+      background: #c9d8e8;
+    }
+
+    /* Map hint badge */
+    .map-hint {
+      position: absolute; top: 14px; left: 50%; transform: translateX(-50%);
+      z-index: 800;
+      background: rgba(255,255,255,0.95);
+      backdrop-filter: blur(8px);
+      padding: 6px 16px;
+      border-radius: 999px;
+      font-size: 10px; font-weight: 800; color: var(--red);
+      text-transform: uppercase; letter-spacing: 0.12em;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+      pointer-events: none;
+      white-space: nowrap;
+      animation: floatHint 3s ease-in-out infinite;
+    }
+    @keyframes floatHint {
+      0%,100% { transform: translateX(-50%) translateY(0); }
+      50%      { transform: translateX(-50%) translateY(-3px); }
+    }
+
+    /* Region pills row on map */
+    .map-pills {
+      position: absolute; bottom: 16px; left: 50%; transform: translateX(-50%);
+      z-index: 800;
+      display: flex; gap: 8px; flex-wrap: nowrap;
+    }
+    .map-pill {
+      font-size: 11px; font-weight: 800;
+      padding: 6px 16px; border-radius: 999px;
+      border: 2px solid transparent;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all .25s;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.12);
+    }
+    .map-pill:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(0,0,0,0.2); }
+    .map-pill.active { transform: translateY(-2px) scale(1.06); box-shadow: 0 6px 20px rgba(0,0,0,0.25); }
+
+    /* ── Side panel ── */
+    .side-panel {
+      display: flex; flex-direction: column;
+      background: white;
+      border-left: 1px solid rgba(0,0,0,0.07);
+      overflow: hidden;
+    }
+
+    /* Panel — default (no region selected) */
+    .panel-default {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 40px 32px; text-align: center;
+      transition: opacity .3s;
+    }
+    .panel-default .orb {
+      width: 80px; height: 80px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--red), var(--gold));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 34px; margin-bottom: 20px;
+      box-shadow: 0 8px 30px rgba(139,0,0,0.25);
+      animation: orbPulse 3s ease-in-out infinite;
+    }
+    @keyframes orbPulse {
+      0%,100% { box-shadow: 0 8px 30px rgba(139,0,0,0.25); }
+      50%      { box-shadow: 0 8px 40px rgba(139,0,0,0.45); }
+    }
+    .panel-default h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 20px; color: var(--red); margin-bottom: 10px;
+    }
+    .panel-default p { font-size: 13px; color: #888; line-height: 1.7; max-width: 260px; }
+    .craft-icons { display: flex; gap: 24px; margin-top: 28px; }
+    .craft-icon { text-align: center; }
+    .craft-icon .emoji { font-size: 28px; margin-bottom: 6px; }
+    .craft-icon label { font-size: 9px; font-weight: 700; color: #bbb; text-transform: uppercase; letter-spacing: 0.1em; }
+
+    /* Panel — region active */
+    .panel-active { flex: 1; display: none; flex-direction: column; overflow: hidden; }
+
+    .region-header {
+      padding: 24px 28px 20px;
+      border-bottom: 1px solid rgba(0,0,0,0.06);
+      position: relative; overflow: hidden;
+    }
+    .region-header::before {
+      content: attr(data-emoji);
+      position: absolute; right: 20px; top: 50%; transform: translateY(-50%);
+      font-size: 64px; opacity: 0.12; pointer-events: none;
+    }
+    .region-sub {
+      font-size: 9px; font-weight: 800; text-transform: uppercase;
+      letter-spacing: 0.14em; color: #999; margin-bottom: 4px;
+    }
+    .region-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 26px; font-weight: 900; color: var(--red);
+      margin-bottom: 8px; line-height: 1.1;
+    }
+    .region-desc { font-size: 12.5px; color: #555; line-height: 1.65; max-width: 320px; }
+
+    .village-tags { display: flex; flex-wrap: wrap; gap: 6px; padding: 14px 28px; border-bottom: 1px solid rgba(0,0,0,0.05); }
+    .village-tag {
+      font-size: 9.5px; font-weight: 800;
+      padding: 4px 12px; border-radius: 999px;
+      letter-spacing: 0.07em;
+    }
+
+    .products-section { flex: 1; overflow-y: auto; padding: 18px 20px 16px; }
+    .products-label {
+      font-size: 9px; font-weight: 800; text-transform: uppercase;
+      letter-spacing: 0.14em; color: #bbb; margin-bottom: 12px;
+    }
+    .products-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+    .product-card {
+      display: flex; flex-direction: column;
+      background: #fafafa; border: 1px solid #f0f0f0;
+      border-radius: 14px; overflow: hidden;
+      cursor: pointer; transition: all .2s;
+    }
+    .product-card:hover { box-shadow: 0 6px 20px rgba(0,0,0,0.1); transform: translateY(-2px); border-color: #e0e0e0; }
+    .product-img { width: 100%; height: 100px; object-fit: cover; }
+    .product-info { padding: 10px; }
+    .product-loc { font-size: 8.5px; font-weight: 700; color: #bbb; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 3px; }
+    .product-name { font-size: 11.5px; font-weight: 800; color: var(--red); line-height: 1.3; margin-bottom: 4px; }
+    .product-price { font-size: 11px; font-weight: 700; color: var(--gold); }
+
+    .no-products {
+      grid-column: 1/-1; text-align: center;
+      font-size: 12px; color: #ccc; font-style: italic; padding: 24px 0;
+    }
+
+    .view-all-btn {
+      display: block; width: calc(100% - 40px); margin: 0 20px 20px;
+      padding: 12px; border-radius: 999px;
+      border: 2px solid var(--red); color: var(--red);
+      background: transparent;
+      font-size: 11px; font-weight: 800;
+      text-transform: uppercase; letter-spacing: 0.1em;
+      cursor: pointer; transition: all .25s; text-align: center;
+    }
+    .view-all-btn:hover { background: var(--red); color: white; }
+
+    /* ── Leaflet overrides ── */
+    .leaflet-control-zoom {
+      border: none !important;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.18) !important;
+      border-radius: 12px !important;
+      overflow: hidden;
+    }
+    .leaflet-control-zoom a {
+      background: rgba(255,255,255,0.96) !important;
+      color: #333 !important;
+      border: none !important;
+      font-size: 18px !important;
+      width: 36px !important; height: 36px !important;
+      line-height: 36px !important;
+      transition: background .15s !important;
+    }
+    .leaflet-control-zoom a:hover { background: white !important; }
+    .leaflet-control-attribution { display: none; }
+
+    /* City tooltip */
+    .vn-city-tip {
+      background: rgba(255,255,255,0.97) !important;
+      border: 1.5px solid #e8e0d0 !important;
+      border-radius: 8px !important;
+      font-size: 11px !important;
+      font-weight: 800 !important;
+      color: #222 !important;
+      padding: 4px 10px !important;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.12) !important;
+      font-family: 'Be Vietnam Pro', sans-serif !important;
+    }
+    .vn-city-tip::before { display: none !important; }
+
+    /* Region label tooltip */
+    .vn-region-lbl {
+      background: transparent !important;
+      border: none !important;
+      box-shadow: none !important;
+    }
+
+    /* Popup */
+    .leaflet-popup-content-wrapper {
+      background: #fff !important;
+      border-radius: 18px !important;
+      border: 1px solid rgba(0,0,0,0.08) !important;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.12) !important;
+      padding: 0 !important;
+    }
+    .leaflet-popup-content { margin: 0 !important; }
+    .leaflet-popup-tip { background: white !important; }
+    .leaflet-popup-close-button { top: 10px !important; right: 12px !important; color: #999 !important; font-size: 18px !important; }
+
+    /* Scrollbar */
+    .products-section::-webkit-scrollbar { width: 4px; }
+    .products-section::-webkit-scrollbar-track { background: transparent; }
+    .products-section::-webkit-scrollbar-thumb { background: #e0d8cc; border-radius: 4px; }
+
+    /* Entrance animation */
+    @keyframes slideUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+    .animate-in { animation: slideUp .35s ease forwards; }
+  </style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="site-header">
+  <div class="logo">
+    🪷 Viet<span>Soul</span>
+    <span style="font-size:11px;font-weight:500;color:rgba(255,255,255,0.55);font-family:'Be Vietnam Pro',sans-serif;margin-left:8px;">Bản Đồ Làng Nghề</span>
+  </div>
+  <a href="index.html" class="back-btn">← Về trang chủ</a>
+</header>
+
+<!-- Main app -->
+<div class="app">
+
+  <!-- LEFT: Map -->
+  <div class="map-wrapper">
+    <div class="map-hint">👆 Bấm vào vùng để khám phá</div>
+    <div id="map"></div>
+
+    <!-- Region pills -->
+    <div class="map-pills">
+      <button class="map-pill" data-region="bac"
+        style="background:#d4edda;border-color:#81c784;color:#1b5e20;"
+        onclick="selectRegion('bac')">🌲 Miền Bắc</button>
+      <button class="map-pill" data-region="trung"
+        style="background:#fff9c4;border-color:#f9d835;color:#7a5c00;"
+        onclick="selectRegion('trung')">☀️ Miền Trung</button>
+      <button class="map-pill" data-region="taynguyen"
+        style="background:#ffe0b2;border-color:#ffa726;color:#7a2500;"
+        onclick="selectRegion('taynguyen')">🏔️ Tây Nguyên</button>
+      <button class="map-pill" data-region="nam"
+        style="background:#fce4ec;border-color:#f48fb1;color:#6a0026;"
+        onclick="selectRegion('nam')">🌊 Miền Nam</button>
+    </div>
+  </div>
+
+  <!-- RIGHT: Side panel -->
+  <div class="side-panel">
+
+    <!-- Default state -->
+    <div class="panel-default" id="panel-default">
+      <div class="orb">🗺️</div>
+      <h3>Chọn một vùng miền</h3>
+      <p>Bấm vào bản đồ hoặc các nút bên dưới để khám phá làng nghề và sản phẩm thủ công đặc trưng.</p>
+      <div class="craft-icons">
+        <div class="craft-icon"><div class="emoji">🏺</div><label>Gốm sứ</label></div>
+        <div class="craft-icon"><div class="emoji">🧵</div><label>Lụa vải</label></div>
+        <div class="craft-icon"><div class="emoji">🖼️</div><label>Tranh</label></div>
+        <div class="craft-icon"><div class="emoji">🪵</div><label>Mộc</label></div>
+      </div>
+    </div>
+
+    <!-- Active region state -->
+    <div class="panel-active" id="panel-active">
+      <div class="region-header" id="region-header" data-emoji="">
+        <div class="region-sub" id="region-sub"></div>
+        <div class="region-name" id="region-name"></div>
+        <div class="region-desc" id="region-desc"></div>
+      </div>
+
+      <div class="village-tags" id="village-tags"></div>
+
+      <div class="products-section">
+        <div class="products-label">Sản phẩm đặc trưng vùng</div>
+        <div class="products-grid" id="products-grid"></div>
+      </div>
+
+      <button class="view-all-btn" id="view-all-btn">
+        Xem tất cả sản phẩm vùng này →
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════════════
+// DATA
+// ══════════════════════════════════════════════════════════════════
+const PRODUCTS = [
+  { id:1,  name:"Tranh Đông Hồ 'Mục Đồng'", price:"150.000", loc:"Hà Nội",
+    img:"https://noithatbinhminh.com.vn/wp-content/uploads/2021/11/tranh-dong-ho-06.jpg",
+    fb:"https://placehold.co/300x200/8B0000/FFF8E1?text=Tranh+Đông+Hồ" },
+  { id:2,  name:"Áo Dài Lụa Tơ Tằm", price:"500.000", loc:"Hà Nội",
+    img:"https://i.pinimg.com/originals/f2/16/6c/f2166c45c2807cf7c81847aa39047c57.jpg",
+    fb:"https://placehold.co/300x200/A0522D/FFF8E1?text=Áo+Dài+Lụa" },
+  { id:3,  name:"Khăn Choàng Thổ Cẩm", price:"250.000", loc:"Gia Lai",
+    img:"https://chus.vn/images/detailed/241/10038_34_F1.jpg",
+    fb:"https://placehold.co/300x200/B8860B/FFF8E1?text=Thổ+Cẩm" },
+  { id:4,  name:"Hoa Giấy Thanh Tiên", price:"100.000", loc:"Huế",
+    img:"https://dulichtudo.vn/wp-content/uploads/2021/03/3-lang-nghe-hoa-giay-thanh-tien-768x512.jpg",
+    fb:"https://placehold.co/300x200/FF6B35/FFF8E1?text=Hoa+Giấy" },
+  { id:5,  name:"Gốm Sứ Bát Tràng", price:"600.000", loc:"Hà Nội",
+    img:"https://images.squarespace-cdn.com/content/v1/5ef75ab2b9e1265aaf984ec3/fb7790c5-bf44-4aa3-909d-1016088707c2/Porcelain+faceted.bowls+with+markings.jpeg",
+    fb:"https://placehold.co/300x200/4A90E2/FFF8E1?text=Gốm+Bát+Tràng" },
+  { id:6,  name:"Giỏ Đan Tre Bao La", price:"120.000", loc:"Huế",
+    img:"https://images.baoangiang.com.vn/image/fckeditor/upload/2023/20231119/images/450afdbf5640801ed951.jpg",
+    fb:"https://placehold.co/300x200/7CB342/FFF8E1?text=Giỏ+Tre" },
+  { id:7,  name:"Tượng Quan Âm Gỗ Kim Bồng", price:"400.000", loc:"Hội An",
+    img:"https://godinh.com/web/image/1714964/image3.png?access_token=b5472d81-b8e6-48c6-925f-d499eb9f49ed",
+    fb:"https://placehold.co/300x200/8B4513/FFF8E1?text=Tượng+Gỗ" },
+  { id:8,  name:"Túi Vải Thêu Sen", price:"250.000", loc:"TP.HCM",
+    img:"https://i.etsystatic.com/32617721/r/il/e9c3b6/3697004149/il_1588xN.3697004149_jjyv.jpg",
+    fb:"https://placehold.co/300x200/616161/FFF8E1?text=Túi+Vải" },
+  { id:9,  name:"Tranh Ngũ Hổ Làng Sình", price:"450.000", loc:"Huế",
+    img:"https://file.hstatic.net/200000017614/file/tranh-ngu-ho-1_430d9f1800314e81b3e2fb3a27f5c9a6.jpg",
+    fb:"https://placehold.co/300x200/8B0000/FFF8E1?text=Tranh+Ngũ+Hổ" },
+  { id:10, name:"Bình Gốm Hoa Sen Khảm", price:"890.000", loc:"Hà Nội",
+    img:"https://i.etsystatic.com/20886807/r/il/15690c/1977818224/il_1080xN.1977818224_mo5c.jpg",
+    fb:"https://placehold.co/300x200/4A90E2/FFF8E1?text=Gốm+Hoa+Sen" },
+  { id:11, name:"Khăn Lụa Vạn Phúc", price:"280.000", loc:"Hà Nội",
+    img:"https://cdn.shopify.com/s/files/1/0101/0450/4401/products/c4-jpg-1575540676767_600x.jpg",
+    fb:"https://placehold.co/300x200/A0522D/FFF8E1?text=Khăn+Lụa" },
+  { id:12, name:"Sáo Trúc Gia Lai", price:"170.000", loc:"Gia Lai",
+    img:"https://i.vdoc.vn/data/image/2019/01/23/sao-truc.jpg",
+    fb:"https://placehold.co/300x200/920c0c/fcf8f5?text=Sáo+Trúc" },
+  { id:13, name:"Mây Tre Đan Bao La", price:"150.000", loc:"Huế",
+    img:"https://dantra.vn/uploads/san-pham/thi-cong/decor-tuong/trang-tri-may-tre-dan-16.jpg",
+    fb:"https://placehold.co/300x200/7CB342/FFF8E1?text=Mây+Tre" },
+  { id:14, name:"Tranh Sơn Mài 'Phố Cổ'", price:"500.000", loc:"Hà Nội",
+    img:"https://www.kiettacnghethuat.com/wp-content/uploads/ha-noi-moi-tranh-son-mai-pho-cua-hoa-si-nguyen-van-nghia.jpg",
+    fb:"https://placehold.co/300x200/8B4513/FFF8E1?text=Sơn+Mài" },
+];
+
+// Region config — exact same pattern as your AQI map's station config
+const REGIONS = {
+  bac: {
+    label: 'Miền Bắc',
+    sub: 'Hà Nội · Bắc Ninh · Hải Dương · Hạ Long',
+    desc: 'Cái nôi của nền thủ công mỹ nghệ Việt Nam — gốm Bát Tràng nghìn năm, lụa Vạn Phúc tinh tế, tranh Đông Hồ mực in dân gian.',
+    emoji: '🌲',
+    villages: ['Gốm Bát Tràng', 'Lụa Vạn Phúc', 'Tranh Đông Hồ', 'Sơn mài Hạ Thái'],
+    locations: ['Hà Nội', 'Bắc Ninh', 'Hải Dương'],
+    fill: '#c8e6c9', stroke: '#388e3c', activeFill: '#66bb6a',
+    pillBg: '#d4edda', pillBorder: '#81c784', pillColor: '#1b5e20',
+    tagBg: 'rgba(56,142,60,0.1)', tagColor: '#1b5e20',
+    flyTo: [21.2, 105.4], flyZoom: 7,
+    cities: [
+      { name:'Hà Nội',   lat:21.027, lng:105.834, main:true  },
+      { name:'Bắc Ninh', lat:21.186, lng:106.076, main:false },
+      { name:'Hạ Long',  lat:20.951, lng:107.085, main:false },
+    ],
+    // Accurate polygon tracing real Vietnam northern border
+    coords: [
+      [22.90,102.18],[23.12,103.02],[23.38,104.70],[22.82,105.32],[22.02,106.70],
+      [21.55,107.10],[20.92,107.35],[20.32,106.70],[20.10,106.02],[19.82,105.90],
+      [20.10,105.42],[20.52,104.90],[20.88,104.12],[21.28,103.55],[21.68,102.90],[22.90,102.18]
+    ]
+  },
+  trung: {
+    label: 'Miền Trung',
+    sub: 'Huế · Đà Nẵng · Hội An · Quảng Nam',
+    desc: 'Vùng đất của cố đô và di sản UNESCO — tranh Làng Sình, mộc Kim Bồng, nón lá Huế, và đèn lồng Hội An huyền ảo.',
+    emoji: '☀️',
+    villages: ['Mộc Kim Bồng', 'Tranh Làng Sình', 'Nón Lá Huế', 'Đèn Lồng Hội An'],
+    locations: ['Huế', 'Hội An', 'Đà Nẵng'],
+    fill: '#fff9c4', stroke: '#c8960c', activeFill: '#fff176',
+    pillBg: '#fff9c4', pillBorder: '#f9d835', pillColor: '#7a5c00',
+    tagBg: 'rgba(200,150,12,0.1)', tagColor: '#7a5c00',
+    flyTo: [16.0, 108.0], flyZoom: 7,
+    cities: [
+      { name:'Huế',     lat:16.467, lng:107.590, main:true  },
+      { name:'Đà Nẵng', lat:16.054, lng:108.202, main:true  },
+      { name:'Hội An',  lat:15.880, lng:108.335, main:false },
+    ],
+    coords: [
+      [19.82,105.90],[20.10,106.02],[20.32,106.70],[20.92,107.35],[21.55,107.10],
+      [21.10,107.62],[20.28,107.88],[19.38,108.18],[18.02,109.00],[17.10,108.62],
+      [16.52,108.05],[15.95,108.38],[15.38,108.55],[14.52,108.02],[13.52,109.22],
+      [12.22,109.30],[11.52,108.92],[11.02,107.95],[11.48,107.50],[12.48,107.75],
+      [13.48,108.00],[14.48,107.52],[15.78,107.75],[17.02,106.52],[18.52,105.82],[19.82,105.90]
+    ]
+  },
+  taynguyen: {
+    label: 'Tây Nguyên',
+    sub: 'Gia Lai · Đắk Lắk · Kon Tum · Lâm Đồng',
+    desc: 'Đại ngàn hùng vĩ — thổ cẩm dệt tay của đồng bào dân tộc, nhạc cụ tre nứa, tượng gỗ điêu khắc và cồng chiêng vang vọng.',
+    emoji: '🏔️',
+    villages: ['Thổ cẩm Gia Lai', 'Đan lát Kon Tum', 'Tượng gỗ Tây Nguyên', 'Nhạc cụ tre nứa'],
+    locations: ['Gia Lai', 'Đắk Lắk', 'Kon Tum', 'Lâm Đồng'],
+    fill: '#ffe0b2', stroke: '#e65100', activeFill: '#ffa726',
+    pillBg: '#ffe0b2', pillBorder: '#ffa726', pillColor: '#7a2500',
+    tagBg: 'rgba(230,81,0,0.1)', tagColor: '#7a2500',
+    flyTo: [13.2, 108.1], flyZoom: 8,
+    cities: [
+      { name:'Gia Lai',  lat:13.983, lng:108.017, main:true  },
+      { name:'Đắk Lắk', lat:12.710, lng:108.238, main:false },
+      { name:'Đà Lạt',  lat:11.940, lng:108.458, main:false },
+    ],
+    coords: [
+      [11.02,107.95],[11.52,108.92],[12.22,109.30],[13.52,109.22],[14.48,107.52],
+      [13.48,108.00],[12.48,107.75],[11.48,107.50],[11.02,107.95]
+    ]
+  },
+  nam: {
+    label: 'Miền Nam',
+    sub: 'TP.HCM · Bình Dương · Mê Kông · Đồng Nai',
+    desc: 'Đô thị sáng tạo & đồng bằng xanh mướt — túi vải thêu tay, gốm ESG, đồ lưu niệm tái chế và các dự án thủ công xã hội.',
+    emoji: '🌊',
+    villages: ['Thêu tay TP.HCM', 'Gốm Bình Dương', 'Lá buông An Giang', 'Mây tre Đồng Tháp'],
+    locations: ['TP.HCM', 'Đồng Nai', 'Cần Thơ', 'Vũng Tàu'],
+    fill: '#fce4ec', stroke: '#880e4f', activeFill: '#f48fb1',
+    pillBg: '#fce4ec', pillBorder: '#f48fb1', pillColor: '#6a0026',
+    tagBg: 'rgba(136,14,79,0.08)', tagColor: '#6a0026',
+    flyTo: [10.5, 106.5], flyZoom: 7,
+    cities: [
+      { name:'TP.HCM',    lat:10.823, lng:106.629, main:true  },
+      { name:'Cần Thơ',   lat:10.045, lng:105.747, main:false },
+      { name:'Vũng Tàu',  lat:10.346, lng:107.084, main:false },
+    ],
+    coords: [
+      [11.02,107.95],[11.48,107.50],[11.02,108.00],[10.85,107.55],[10.42,107.22],
+      [10.82,106.62],[10.02,106.48],[9.50,105.80],[8.82,105.12],[8.62,104.82],
+      [9.18,104.52],[10.02,104.80],[10.52,104.52],[10.82,105.02],[11.48,107.50],[11.02,107.95]
+    ]
+  }
+};
+
+// ══════════════════════════════════════════════════════════════════
+// MAP INIT — same pattern as your AQI map
+// ══════════════════════════════════════════════════════════════════
+var map, polyLayers = {}, cityMarkers = [], activeRegionKey = null;
+
+function initMap() {
+  map = L.map('map', {
+    center: [16.5, 107.5],
+    zoom: 6,
+    zoomControl: false,
+    scrollWheelZoom: false,
+    doubleClickZoom: false,
+    attributionControl: false,
+    minZoom: 5,
+    maxZoom: 10,
+  });
+
+  L.control.zoom({ position: 'topleft' }).addTo(map);
+
+  // CartoDB Voyager — warm, clean, no excess labels
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}{r}.png', {
+    subdomains: 'abcd', maxZoom: 10, crossOrigin: true
+  }).addTo(map);
+
+  // Only country-level labels on top
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager_only_labels/{z}/{x}/{y}{r}.png', {
+    subdomains: 'abcd', maxZoom: 10, crossOrigin: true, opacity: 0.6
+  }).addTo(map);
+
+  // Draw all region polygons
+  Object.keys(REGIONS).forEach(function(key) {
+    var r = REGIONS[key];
+
+    var poly = L.polygon(r.coords, {
+      color:       r.stroke,
+      weight:      2,
+      fillColor:   r.fill,
+      fillOpacity: 0.52,
+      dashArray:   '6,4',
+      lineCap:     'round',
+      lineJoin:    'round',
+    }).addTo(map);
+
+    // Hover — same pattern as your AQI map
+    poly.on('mouseover', function() {
+      if (activeRegionKey === key) return;
+      poly.setStyle({ fillOpacity: 0.7, dashArray: '' });
+      map.getContainer().style.cursor = 'pointer';
+    });
+    poly.on('mouseout', function() {
+      if (activeRegionKey === key) return;
+      poly.setStyle({ fillOpacity: 0.52, dashArray: '6,4' });
+      map.getContainer().style.cursor = '';
+    });
+    poly.on('click', function() { selectRegion(key); });
+
+    // Floating region label — like AQI "Live Monitoring" badges
+    var center = poly.getBounds().getCenter();
+    var lblEl = document.createElement('div');
+    lblEl.innerHTML =
+      '<div onclick="selectRegion(\'' + key + '\')" style="' +
+        'background:' + r.fill + ';' +
+        'border:2px solid ' + r.stroke + ';' +
+        'color:' + r.stroke + ';' +
+        'font-size:11px;font-weight:900;' +
+        'padding:5px 14px;border-radius:999px;' +
+        'white-space:nowrap;cursor:pointer;' +
+        'box-shadow:0 3px 12px rgba(0,0,0,0.18);' +
+        'letter-spacing:0.05em;' +
+        'transition:transform .2s,box-shadow .2s;' +
+        'font-family:\'Be Vietnam Pro\',sans-serif;' +
+      '" ' +
+      'onmouseover="this.style.transform=\'scale(1.08)\';this.style.boxShadow=\'0 6px 20px rgba(0,0,0,0.28)\'" ' +
+      'onmouseout="this.style.transform=\'\';this.style.boxShadow=\'0 3px 12px rgba(0,0,0,0.18)\'">' +
+        r.label +
+      '</div>';
+
+    L.marker(center, {
+      icon: L.divIcon({ html: lblEl.innerHTML, className: 'vn-region-lbl', iconAnchor: [55, 15] }),
+      interactive: true, zIndexOffset: 100
+    }).addTo(map).on('click', (function(k){ return function(){ selectRegion(k); }; })(key));
+
+    polyLayers[key] = poly;
+  });
+}
+
+// ══════════════════════════════════════════════════════════════════
+// SELECT REGION — same flyTo + style pattern as AQI map
+// ══════════════════════════════════════════════════════════════════
+function selectRegion(key) {
+  var r = REGIONS[key];
+  if (!r) return;
+
+  activeRegionKey = key;
+
+  // Reset all polygons
+  Object.keys(polyLayers).forEach(function(k) {
+    polyLayers[k].setStyle({
+      fillColor:   REGIONS[k].fill,
+      fillOpacity: 0.45,
+      weight:      2,
+      dashArray:   '6,4',
+    });
+  });
+
+  // Activate selected — same as AQI highlight logic
+  polyLayers[key].setStyle({
+    fillColor:   r.activeFill,
+    fillOpacity: 0.7,
+    weight:      3,
+    dashArray:   '',
+  });
+  polyLayers[key].bringToFront();
+
+  // Fly with smooth animation — same as AQI flyTo pattern
+  map.flyTo(r.flyTo, r.flyZoom, { animate: true, duration: 0.85, easeLinearity: 0.35 });
+
+  // City markers
+  removeCityMarkers();
+  r.cities.forEach(function(c) {
+    var dot = L.circleMarker([c.lat, c.lng], {
+      radius:      c.main ? 9 : 6,
+      fillColor:   c.main ? '#8B0000' : '#666',
+      color:       'white',
+      weight:      2.5,
+      fillOpacity: 1,
+    }).addTo(map).bindTooltip(c.name, {
+      permanent:  true,
+      direction:  'right',
+      className:  'vn-city-tip',
+      offset:     [10, 0],
+    });
+    cityMarkers.push(dot);
+  });
+
+  // Update pills
+  document.querySelectorAll('.map-pill').forEach(function(p) {
+    var on = p.dataset.region === key;
+    p.classList.toggle('active', on);
+    p.style.transform   = on ? 'translateY(-3px) scale(1.08)' : '';
+    p.style.boxShadow   = on ? '0 8px 20px rgba(0,0,0,0.25)' : '';
+    p.style.borderWidth = on ? '2.5px' : '2px';
+  });
+
+  // Update panel
+  updatePanel(key, r);
+}
+
+function removeCityMarkers() {
+  cityMarkers.forEach(function(m) { map.removeLayer(m); });
+  cityMarkers = [];
+}
+
+// ══════════════════════════════════════════════════════════════════
+// PANEL UPDATE
+// ══════════════════════════════════════════════════════════════════
+function updatePanel(key, r) {
+  // Show active panel
+  document.getElementById('panel-default').style.display = 'none';
+  var panelActive = document.getElementById('panel-active');
+  panelActive.style.display = 'flex';
+  panelActive.classList.remove('animate-in');
+  void panelActive.offsetWidth; // reflow
+  panelActive.classList.add('animate-in');
+
+  // Header
+  var hdr = document.getElementById('region-header');
+  hdr.dataset.emoji = r.emoji;
+  hdr.style.borderLeft = '4px solid ' + r.stroke;
+  document.getElementById('region-sub').textContent  = r.sub;
+  document.getElementById('region-name').textContent = r.label;
+  document.getElementById('region-desc').textContent = r.desc;
+
+  // Village tags
+  var tagsEl = document.getElementById('village-tags');
+  tagsEl.innerHTML = r.villages.map(function(v) {
+    return '<span class="village-tag" style="background:' + r.tagBg + ';color:' + r.tagColor + ';">' + v + '</span>';
+  }).join('');
+
+  // Products
+  var prods = PRODUCTS.filter(function(p) {
+    var loc = (p.loc || '').toLowerCase();
+    return r.locations.some(function(l) {
+      return loc.indexOf(l.toLowerCase()) !== -1 || l.toLowerCase().indexOf(loc) !== -1;
+    });
+  }).slice(0, 4);
+
+  var grid = document.getElementById('products-grid');
+  if (prods.length > 0) {
+    grid.innerHTML = prods.map(function(p) {
+      return '<div class="product-card" onclick="window.opener && window.opener.openProductDetail(' + p.id + ')">' +
+        '<img class="product-img" src="' + p.img + '" alt="' + p.name + '" onerror="this.src=\'' + p.fb + '\'">' +
+        '<div class="product-info">' +
+          '<div class="product-loc">' + p.loc + '</div>' +
+          '<div class="product-name">' + p.name + '</div>' +
+          '<div class="product-price">' + p.price + '₫</div>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+  } else {
+    grid.innerHTML = '<div class="no-products">Đang cập nhật sản phẩm...</div>';
+  }
+
+  // View all button
+  document.getElementById('view-all-btn').onclick = function() {
+    // If embedded in index.html context, can trigger filter
+    if (window.parent && window.parent.showPage) {
+      window.parent.showPage('products');
+    } else if (window.opener) {
+      window.opener.showPage && window.opener.showPage('products');
+    } else {
+      window.location.href = 'index.html#products';
+    }
+  };
+}
+
+// ══════════════════════════════════════════════════════════════════
+// BOOT
+// ══════════════════════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', function() {
+  initMap();
+});
+</script>
+</body>
+</html>
