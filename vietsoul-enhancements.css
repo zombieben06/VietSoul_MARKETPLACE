@@ -295,3 +295,106 @@ body {
     transition: width .6s ease;
 }
 .vs-review-bar-count { font-size: 8px; color: #9a7a60; width: 14px; flex-shrink: 0; }
+
+/* ═══════════════════════════════════════════════════════════════
+   FLIP CARD 3D + PARALLAX
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── FLIP CARD ───────────────────────────────────────────────── */
+.vs-flip-wrap {
+    perspective: 900px;
+    /* Giữ nguyên kích thước gốc của card */
+    display: contents;
+}
+.vs-flip-inner {
+    position: relative;
+    width: 100%; height: 100%;
+    transform-style: preserve-3d;
+    transition: transform .55s cubic-bezier(.4,0,.2,1);
+    border-radius: inherit;
+}
+/* Chỉ flip trên desktop hover — mobile dùng tap */
+@media (hover: hover) {
+    .vs-flip-wrap:hover .vs-flip-inner { transform: rotateY(180deg); }
+}
+.vs-flip-wrap.flipped .vs-flip-inner { transform: rotateY(180deg); }
+
+.vs-face {
+    position: absolute; inset: 0;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    border-radius: inherit;
+    overflow: hidden;
+}
+.vs-face-back {
+    transform: rotateY(180deg);
+    background: linear-gradient(160deg, #1a0800 0%, #3a0c00 50%, #1a0800 100%);
+    display: flex; flex-direction: column;
+    justify-content: space-between;
+    padding: 18px 16px 14px;
+}
+
+/* Back face nội dung */
+.vs-back-img {
+    width: 100%; height: 90px; object-fit: cover;
+    border-radius: 10px; opacity: .55;
+    filter: sepia(.4) contrast(1.1);
+    flex-shrink: 0;
+}
+.vs-back-artist {
+    font-size: 8px; font-weight: 900; letter-spacing: .2em;
+    text-transform: uppercase; color: rgba(200,150,12,.7);
+    margin: 10px 0 4px;
+}
+.vs-back-name {
+    font-family: 'SVN Agency FB','Playfair Display',serif;
+    font-size: 13px; font-weight: 900; color: #fff;
+    text-transform: uppercase; letter-spacing: .06em;
+    line-height: 1.25; margin-bottom: 6px;
+}
+.vs-back-story {
+    font-size: 9.5px; color: rgba(255,240,210,.7);
+    line-height: 1.6; flex: 1;
+    display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+.vs-back-tags {
+    display: flex; flex-wrap: wrap; gap: 4px; margin: 8px 0;
+}
+.vs-back-tag {
+    font-size: 8px; font-weight: 800; letter-spacing: .08em;
+    background: rgba(200,150,12,.15); color: #C8960C;
+    border: 1px solid rgba(200,150,12,.25);
+    padding: 2px 7px; border-radius: 99px;
+}
+.vs-back-price {
+    font-family: 'SVN Agency FB','Playfair Display',serif;
+    font-size: 17px; font-weight: 900; color: #FFD700;
+    margin-bottom: 10px;
+}
+.vs-back-btn {
+    width: 100%; padding: 9px;
+    background: linear-gradient(135deg, #8B0000, #C8960C);
+    color: white; font-size: 10px; font-weight: 900;
+    text-transform: uppercase; letter-spacing: .14em;
+    border: none; border-radius: 8px; cursor: pointer;
+    box-shadow: 0 4px 16px rgba(139,0,0,.4);
+    transition: transform .15s, box-shadow .15s;
+}
+.vs-back-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(139,0,0,.5); }
+
+/* Hint flip — mobile */
+.vs-flip-hint {
+    position: absolute; bottom: 8px; right: 8px; z-index: 5;
+    font-size: 8px; font-weight: 800; letter-spacing: .1em;
+    text-transform: uppercase; color: rgba(139,0,0,.4);
+    background: rgba(255,255,255,.85); padding: 2px 7px;
+    border-radius: 99px; pointer-events: none;
+}
+@media (hover: hover) { .vs-flip-hint { display: none; } }
+
+/* ── PARALLAX ────────────────────────────────────────────────── */
+.vs-parallax {
+    will-change: transform;
+    transition: transform .08s linear;
+}
