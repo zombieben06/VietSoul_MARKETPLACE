@@ -272,14 +272,278 @@
     if (ov) ov.classList.remove('open');
   }
 
-  let _orderPatchDone = false;
-  function patchPlaceOrder() {
-    if (_orderPatchDone) return;
-    if (typeof window.placeOrder !== 'function') { setTimeout(patchPlaceOrder, 200); return; }
-    _orderPatchDone = true;
-    const orig = window.placeOrder;
-    window.placeOrder = function() {
-      orig();
+  /* ════════════════════════════════════════════════════════════
+     CHECKOUT MULTI-STEP FLOW
+     
+     Bước 1: Thông tin giao hàng  (panel-1 đã có)
+     Bước 2: Phương thức thanh toán (panel-2 đã có) + panel chi tiết inject
+     Bước 3: Xác nhận đơn hàng    (panel-3 inject mới)
+     → Đặt hàng → Certificate
+     
+     Toàn bộ điều hướng qua JS, không đụng index.html
+  ════════════════════════════════════════════════════════════ */
+  let _checkoutFlowDone = false;
+
+  function initCheckoutFlow() {
+    if (_checkoutFlowDone) return;
+    if (typeof window.placeOrder !== 'function' || !document.getElementById('ck-panel-1')) {
+      setTimeout(initCheckoutFlow, 200); return;
+    }
+    _checkoutFlowDone = true;
+
+    /* ── 1. Thêm nút "Tiếp tục" vào panel-1 ── */
+    const panel1 = document.getElementById('ck-panel-1');
+    const panel2 = document.getElementById('ck-panel-2');
+    if (!panel1 || !panel2) return;
+
+    // Nút Tiếp tục bước 1
+    const btn1 = document.createElement('button');
+    btn1.id = 'ck-btn-1';
+    btn1.className = 'w-full py-4 rounded-2xl font-black text-sm uppercase tracking-widest transition-all duration-300 hover:-translate-y-1 mt-2';
+    btn1.style.cssText = 'background:linear-gradient(135deg,#8B0000,#C8960C);color:#fff;box-shadow:0 8px 28px rgba(139,0,0,0.3);';
+    btn1.textContent = 'Tiếp tục → Chọn thanh toán';
+    btn1.addEventListener('click', () => goToStep(2));
+    panel1.after(btn1);
+
+    /* ── 2. Thêm chi tiết vào từng lựa chọn thanh toán ── */
+    // COD detail
+    const codDetail = document.createElement('div');
+    codDetail.id = 'pay-cod-detail';
+    codDetail.className = 'vs-pay-detail';
+    codDetail.innerHTML = `
+      <div class="vs-pay-detail-inner">
+        <div class="vs-pay-detail-icon">🚚</div>
+        <div>
+          <div class="vs-pay-detail-title">Thanh toán khi nhận hàng (COD)</div>
+          <div class="vs-pay-detail-desc">Bạn chỉ thanh toán khi shipper giao hàng tận tay. Áp dụng toàn quốc, không phụ phí.</div>
+          <div class="vs-pay-detail-note">✓ Kiểm tra hàng trước khi nhận &nbsp;·&nbsp; ✓ Miễn phí COD</div>
+        </div>
+      </div>`;
+    document.getElementById('pay-cod').after(codDetail);
+
+    // Bank detail
+    const bankDetail = document.createElement('div');
+    bankDetail.id = 'pay-bank-detail';
+    bankDetail.className = 'vs-pay-detail';
+    bankDetail.style.display = 'none';
+    bankDetail.innerHTML = `
+      <div class="vs-pay-detail-inner">
+        <div class="vs-pay-detail-icon">🏦</div>
+        <div style="width:100%">
+          <div class="vs-pay-detail-title">Thông tin chuyển khoản</div>
+          <div class="vs-bank-info">
+            <div class="vs-bank-row"><span>Ngân hàng</span><strong>Vietcombank (VCB)</strong></div>
+            <div class="vs-bank-row"><span>Số tài khoản</span><strong class="vs-copy" onclick="vsCopyText('1234567890','Đã sao chép STK!')">1234 5678 90 &nbsp;<span class="vs-copy-icon">⧉</span></strong></div>
+            <div class="vs-bank-row"><span>Chủ tài khoản</span><strong>CONG TY VIET SOUL</strong></div>
+            <div class="vs-bank-row"><span>Nội dung CK</span><strong class="vs-copy" id="vs-bank-content" onclick="vsCopyText(document.getElementById('vs-bank-content').textContent,'Đã sao chép nội dung!')">VSSOUL <span id="vs-bank-order">######</span> &nbsp;<span class="vs-copy-icon">⧉</span></strong></div>
+          </div>
+          <div class="vs-pay-detail-note">✓ Xác nhận trong 15 phút sau chuyển khoản</div>
+        </div>
+      </div>`;
+    document.getElementById('pay-bank').after(bankDetail);
+
+    // Momo detail
+    const momoDetail = document.createElement('div');
+    momoDetail.id = 'pay-momo-detail';
+    momoDetail.className = 'vs-pay-detail';
+    momoDetail.style.display = 'none';
+    momoDetail.innerHTML = `
+      <div class="vs-pay-detail-inner">
+        <div class="vs-pay-detail-icon">📱</div>
+        <div style="width:100%">
+          <div class="vs-pay-detail-title">Thanh toán qua ví điện tử</div>
+          <div class="vs-bank-info">
+            <div class="vs-bank-row"><span>MoMo</span><strong class="vs-copy" onclick="vsCopyText('0901234567','Đã sao chép!')">0901 234 567 &nbsp;<span class="vs-copy-icon">⧉</span></strong></div>
+            <div class="vs-bank-row"><span>ZaloPay</span><strong class="vs-copy" onclick="vsCopyText('0901234567','Đã sao chép!')">0901 234 567 &nbsp;<span class="vs-copy-icon">⧉</span></strong></div>
+            <div class="vs-bank-row"><span>VNPay QR</span><strong>Quét mã tại bước xác nhận</strong></div>
+          </div>
+          <div class="vs-pay-detail-note">✓ Xác nhận tức thì sau khi thanh toán</div>
+        </div>
+      </div>`;
+    document.getElementById('pay-momo').after(momoDetail);
+
+    /* ── 3. Nút Tiếp tục bước 2 ── */
+    const btn2 = document.createElement('button');
+    btn2.id = 'ck-btn-2';
+    btn2.className = 'w-full py-4 rounded-2xl font-black text-sm uppercase tracking-widest transition-all duration-300 hover:-translate-y-1 mt-2';
+    btn2.style.cssText = 'background:linear-gradient(135deg,#8B0000,#C8960C);color:#fff;box-shadow:0 8px 28px rgba(139,0,0,0.3);display:none;';
+    btn2.textContent = 'Tiếp tục → Xác nhận đơn hàng';
+    btn2.addEventListener('click', () => goToStep(3));
+    panel2.after(btn2);
+
+    // Nút quay lại bước 1
+    const back1 = document.createElement('button');
+    back1.id = 'ck-back-1';
+    back1.className = 'w-full py-2 text-xs font-bold uppercase tracking-widest mt-1';
+    back1.style.cssText = 'color:rgba(139,0,0,0.45);display:none;background:none;border:none;cursor:pointer;';
+    back1.textContent = '← Quay lại thông tin';
+    back1.addEventListener('click', () => goToStep(1));
+    btn2.after(back1);
+
+    /* ── 4. Panel 3 — Xác nhận đơn hàng ── */
+    const panel3 = document.createElement('div');
+    panel3.id = 'ck-panel-3';
+    panel3.className = 'rounded-3xl p-8';
+    panel3.style.cssText = 'background:white;border:1px solid rgba(139,0,0,0.08);box-shadow:0 4px 20px rgba(139,0,0,0.06);display:none;';
+    panel3.innerHTML = `
+      <h3 class="font-heading font-black text-base uppercase tracking-widest mb-6" style="color:#8B0000;">✅ Xác nhận đơn hàng</h3>
+      <div id="ck-confirm-content" class="space-y-3"></div>`;
+    back1.after(panel3);
+
+    // Nút đặt hàng ngay (thay CTA gốc)
+    const ctaOrig = document.querySelector('button[onclick="placeOrder()"]');
+    if (ctaOrig) {
+      ctaOrig.id = 'ck-btn-final';
+      ctaOrig.style.display = 'none';
+      ctaOrig.removeAttribute('onclick');
+      ctaOrig.addEventListener('click', finalizeOrder);
+    }
+
+    // Nút đặt hàng mới (thêm sau panel3, ban đầu ẩn)
+    const btnFinal = document.createElement('button');
+    btnFinal.id = 'ck-btn-3';
+    btnFinal.className = 'w-full py-5 rounded-2xl font-black text-sm uppercase tracking-widest transition-all duration-300 hover:-translate-y-1';
+    btnFinal.style.cssText = 'background:linear-gradient(135deg,#C8960C,#FFD700);color:#1a0a00;box-shadow:0 8px 32px rgba(200,150,12,0.35);display:none;';
+    btnFinal.innerHTML = '✨ Xác nhận đặt hàng ngay';
+    btnFinal.addEventListener('click', finalizeOrder);
+    panel3.after(btnFinal);
+
+    // Nút quay lại bước 2
+    const back2 = document.createElement('button');
+    back2.id = 'ck-back-2';
+    back2.className = 'w-full py-2 text-xs font-bold uppercase tracking-widest mt-1';
+    back2.style.cssText = 'color:rgba(139,0,0,0.45);display:none;background:none;border:none;cursor:pointer;';
+    back2.textContent = '← Quay lại thanh toán';
+    back2.addEventListener('click', () => goToStep(2));
+    btnFinal.after(back2);
+
+    /* ── 5. Override selectPayMethod để show/hide detail ── */
+    const origSPM = window.selectPayMethod;
+    window.selectPayMethod = function(method) {
+      origSPM && origSPM(method);
+      ['cod','bank','momo'].forEach(m => {
+        const d = document.getElementById('pay-' + m + '-detail');
+        if (d) d.style.display = (m === method) ? 'block' : 'none';
+      });
+    };
+
+    /* ── 6. Helper: copy to clipboard ── */
+    window.vsCopyText = function(text, msg) {
+      navigator.clipboard && navigator.clipboard.writeText(text).catch(() => {});
+      const toast = document.createElement('div');
+      toast.textContent = msg || 'Đã sao chép!';
+      toast.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#1a0800;color:#FFD700;padding:8px 20px;border-radius:99px;font-size:11px;font-weight:900;z-index:9999;pointer-events:none;';
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 1800);
+    };
+
+    /* ── 7. goToStep ── */
+    function goToStep(step) {
+      // Validate bước 1
+      if (step >= 2) {
+        const name  = (document.getElementById('ck-name') || {}).value || '';
+        const phone = (document.getElementById('ck-phone') || {}).value || '';
+        const addr  = (document.getElementById('ck-addr') || {}).value || '';
+        if (!name.trim() || !phone.trim() || !addr.trim()) {
+          if (typeof window.showCartToast === 'function') window.showCartToast('Vui lòng điền đầy đủ thông tin giao hàng!');
+          return;
+        }
+      }
+
+      // Cập nhật step indicator
+      [1, 2, 3].forEach(n => {
+        const el = document.getElementById('ck-step-' + n);
+        if (!el) return;
+        const circle = el.querySelector('div');
+        const label  = el.querySelector('span');
+        if (n < step) {
+          // Đã hoàn thành
+          el.style.opacity = '1';
+          if (circle) { circle.style.background = '#2e7d32'; circle.style.color = 'white'; circle.style.border = 'none'; }
+          if (label)  label.style.color = '#2e7d32';
+        } else if (n === step) {
+          // Đang ở
+          el.style.opacity = '1';
+          if (circle) { circle.style.background = '#8B0000'; circle.style.color = 'white'; circle.style.border = 'none'; }
+          if (label)  label.style.color = '#8B0000';
+        } else {
+          // Chưa đến
+          el.style.opacity = '0.4';
+          if (circle) { circle.style.background = 'transparent'; circle.style.color = 'rgba(139,0,0,0.5)'; circle.style.border = '1.5px solid rgba(139,0,0,0.3)'; }
+          if (label)  label.style.color = 'rgba(139,0,0,0.5)';
+        }
+      });
+
+      // Hiển thị đúng panels & buttons
+      const show = id => { const el = document.getElementById(id); if (el) el.style.display = ''; };
+      const hide = id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; };
+
+      if (step === 1) {
+        show('ck-panel-1'); show('ck-btn-1');
+        hide('ck-panel-2'); hide('ck-btn-2'); hide('ck-back-1');
+        hide('ck-panel-3'); hide('ck-btn-3'); hide('ck-back-2');
+      } else if (step === 2) {
+        show('ck-panel-1');
+        show('ck-panel-2'); show('ck-btn-2'); show('ck-back-1');
+        hide('ck-btn-1');
+        hide('ck-panel-3'); hide('ck-btn-3'); hide('ck-back-2');
+        // Show COD detail by default nếu chưa chọn gì
+        window.selectPayMethod(getSelectedPayMethod());
+      } else if (step === 3) {
+        hide('ck-panel-1');
+        hide('ck-panel-2'); hide('ck-btn-2'); hide('ck-back-1');
+        show('ck-panel-3'); show('ck-btn-3'); show('ck-back-2');
+        renderConfirmPanel();
+      }
+
+      // Scroll to top of checkout
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function getSelectedPayMethod() {
+      const r = document.querySelector('input[name="pay"]:checked');
+      return r ? r.value : 'cod';
+    }
+
+    function renderConfirmPanel() {
+      const name  = (document.getElementById('ck-name')  || {}).value || '';
+      const phone = (document.getElementById('ck-phone') || {}).value || '';
+      const addr  = (document.getElementById('ck-addr')  || {}).value || '';
+      const city  = (document.getElementById('ck-city')  || {}).value || '';
+      const note  = (document.getElementById('ck-note')  || {}).value || '';
+      const total = (document.getElementById('ck-total') || {}).textContent || '';
+      const method = getSelectedPayMethod();
+      const methodLabel = { cod: '💵 Thanh toán khi nhận hàng', bank: '🏦 Chuyển khoản ngân hàng', momo: '📱 Ví điện tử' };
+
+      // Cập nhật nội dung chuyển khoản với tên
+      const bcEl = document.getElementById('vs-bank-order');
+      if (bcEl && name) bcEl.textContent = name.split(' ').pop().toUpperCase();
+
+      const rows = [
+        ['Người nhận', name],
+        ['Điện thoại', phone],
+        ['Địa chỉ', addr + (city ? ', ' + city : '')],
+        note ? ['Ghi chú', note] : null,
+        ['Thanh toán', methodLabel[method] || method],
+        ['Tổng tiền', `<strong style="color:#8B0000;font-size:15px;">${total}</strong>`],
+      ].filter(Boolean);
+
+      const container = document.getElementById('ck-confirm-content');
+      if (!container) return;
+      container.innerHTML = rows.map(([k, v]) => `
+        <div class="vs-confirm-row">
+          <span class="vs-confirm-label">${k}</span>
+          <span class="vs-confirm-value">${v}</span>
+        </div>`).join('') + `
+        <div class="vs-confirm-pledge">
+          🌿 Đơn hàng được đóng gói bằng <strong>vật liệu tái chế</strong>, giao trong 2–5 ngày làm việc.
+        </div>`;
+    }
+
+    /* ── 8. Finalize order (gọi orig placeOrder + certificate) ── */
+    const origPlaceOrder = window.placeOrder;
+    function finalizeOrder() {
+      origPlaceOrder();
       setTimeout(() => {
         const nameEl  = document.getElementById('ck-name');
         const totalEl = document.getElementById('ck-total');
@@ -291,10 +555,27 @@
             total: totalEl ? totalEl.textContent : '',
             customerName: nameEl ? nameEl.value : ''
           });
-        }, 800);
+        }, 900);
       }, 200);
-    };
+    }
+
+    /* ── 9. Khởi động: bước 1 ── */
+    goToStep(1);
+
+    // Reset về bước 1 mỗi khi mở lại trang checkout
+    const origShowPage = window.showPage;
+    if (typeof origShowPage === 'function' && !origShowPage._ckReset) {
+      const wrapped = function(pid) {
+        origShowPage(pid);
+        if (pid === 'checkout') setTimeout(() => goToStep(1), 50);
+      };
+      wrapped._ckReset = true;
+      wrapped._vsPatched = origShowPage._vsPatched;
+      window.showPage = wrapped;
+    }
   }
+
+  function patchPlaceOrder() { initCheckoutFlow(); }
 
   /* ════════════════════════════════════════════════════════════
      5. HERO WARM TINT

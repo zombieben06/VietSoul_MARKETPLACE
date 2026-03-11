@@ -398,3 +398,114 @@ body {
     will-change: transform;
     transition: transform .08s linear;
 }
+/* ═══════════════════════════════════════════════════════════════
+   CHECKOUT MULTI-STEP — payment detail + confirm panel
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Payment detail panels */
+.vs-pay-detail {
+    margin-top: 6px;
+    margin-bottom: 4px;
+    border-radius: 14px;
+    overflow: hidden;
+    animation: vsFadeSlideDown .25s ease;
+}
+@keyframes vsFadeSlideDown {
+    from { opacity:0; transform:translateY(-6px); }
+    to   { opacity:1; transform:translateY(0); }
+}
+.vs-pay-detail-inner {
+    display: flex;
+    gap: 14px;
+    padding: 14px 16px;
+    background: linear-gradient(135deg, rgba(139,0,0,0.03), rgba(200,150,12,0.04));
+    border: 1px solid rgba(139,0,0,0.1);
+    border-radius: 14px;
+    align-items: flex-start;
+}
+.vs-pay-detail-icon {
+    font-size: 22px;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+.vs-pay-detail-title {
+    font-size: 11px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    color: #8B0000;
+    margin-bottom: 5px;
+}
+.vs-pay-detail-desc {
+    font-size: 10px;
+    color: rgba(26,8,0,0.6);
+    line-height: 1.6;
+    margin-bottom: 6px;
+}
+.vs-pay-detail-note {
+    font-size: 9px;
+    color: #2e7d32;
+    font-weight: 800;
+    letter-spacing: .04em;
+}
+
+/* Bank info table */
+.vs-bank-info {
+    margin: 8px 0;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid rgba(139,0,0,0.08);
+}
+.vs-bank-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 7px 12px;
+    font-size: 10px;
+    background: #fff;
+    border-bottom: 1px solid rgba(139,0,0,0.06);
+}
+.vs-bank-row:last-child { border-bottom: none; }
+.vs-bank-row span { color: rgba(26,8,0,0.45); }
+.vs-bank-row strong { color: #1a0800; font-weight: 900; }
+.vs-copy { cursor: pointer; transition: color .15s; }
+.vs-copy:hover { color: #8B0000 !important; }
+.vs-copy-icon { font-size: 9px; opacity: .5; }
+
+/* Confirm panel rows */
+.vs-confirm-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 9px 14px;
+    border-radius: 10px;
+    background: rgba(139,0,0,0.025);
+    border: 1px solid rgba(139,0,0,0.06);
+    gap: 12px;
+}
+.vs-confirm-label {
+    font-size: 9px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    color: rgba(139,0,0,0.5);
+    flex-shrink: 0;
+    min-width: 80px;
+}
+.vs-confirm-value {
+    font-size: 11px;
+    font-weight: 700;
+    color: #1a0800;
+    text-align: right;
+}
+.vs-confirm-pledge {
+    margin-top: 10px;
+    padding: 10px 14px;
+    border-radius: 10px;
+    font-size: 10px;
+    color: rgba(26,8,0,0.55);
+    background: rgba(16,185,129,0.05);
+    border: 1px solid rgba(16,185,129,0.18);
+    line-height: 1.6;
+}
+.vs-confirm-pledge strong { color: #059669; }
