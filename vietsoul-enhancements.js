@@ -174,24 +174,170 @@
   }
 
   /* Patch openProductDetail — guarded, wraps ONCE only */
+  /* ── Size & Color data theo category ── */
+  const VS_VARIANTS = {
+    lua: {
+      sizes:  ['XS','S','M','L','XL','XXL'],
+      colors: [
+        { name:'Đỏ son',     hex:'#C0392B' },
+        { name:'Xanh rêu',   hex:'#4A7C59' },
+        { name:'Vàng nghệ',  hex:'#D4A017' },
+        { name:'Tím hoa',    hex:'#7B4FA0' },
+        { name:'Trắng ngà',  hex:'#F5F0E8' },
+        { name:'Đen',        hex:'#1A1A1A' },
+      ]
+    },
+    tranh: {
+      sizes:  ['20×30 cm','30×40 cm','40×60 cm','50×70 cm','60×90 cm'],
+      colors: [
+        { name:'Nguyên bản',  hex:'#C8960C' },
+        { name:'Nền đỏ son',  hex:'#8B0000' },
+        { name:'Nền xanh lam',hex:'#1A4A7A' },
+        { name:'Nền đen',     hex:'#1A1A1A' },
+      ]
+    },
+    gom: {
+      sizes:  ['Mini (100ml)','Nhỏ (250ml)','Vừa (500ml)','Lớn (1L)','Bộ 2 chiếc','Bộ 4 chiếc'],
+      colors: [
+        { name:'Men trắng',   hex:'#F0EDE8' },
+        { name:'Men celadon', hex:'#ACB48A' },
+        { name:'Men tro',     hex:'#6B6560' },
+        { name:'Men nâu',     hex:'#6B3A2A' },
+        { name:'Xanh cobalt', hex:'#1E3A6E' },
+      ]
+    },
+    gift: {
+      sizes:  ['Hộp S','Hộp M','Hộp L','Hộp Premium'],
+      colors: [
+        { name:'Đỏ truyền thống', hex:'#8B0000' },
+        { name:'Vàng hoàng gia',  hex:'#C8960C' },
+        { name:'Xanh ngọc',       hex:'#2A7A6A' },
+        { name:'Nâu kraft',       hex:'#7A5230' },
+      ]
+    },
+    dotuong: {
+      sizes:  ['10 cm','15 cm','20 cm','30 cm','50 cm'],
+      colors: [
+        { name:'Gỗ tự nhiên',  hex:'#A0522D' },
+        { name:'Sơn son đỏ',   hex:'#8B0000' },
+        { name:'Sơn vàng son', hex:'#C8960C' },
+        { name:'Sơn đen bóng', hex:'#1A1A1A' },
+      ]
+    },
+    default: {
+      sizes:  ['Nhỏ','Vừa','Lớn'],
+      colors: [
+        { name:'Tự nhiên',  hex:'#C8960C' },
+        { name:'Truyền thống', hex:'#8B0000' },
+        { name:'Hiện đại',  hex:'#2A5A8A' },
+      ]
+    }
+  };
+
+  function buildVariantHTML(p) {
+    const v = VS_VARIANTS[p.category] || VS_VARIANTS.default;
+    const sizeOpts = v.sizes.map((s, i) =>
+      `<button class="vs-size-opt${i===0?' active':''}" data-size="${s}">${s}</button>`
+    ).join('');
+    const colorOpts = v.colors.map((c, i) =>
+      `<button class="vs-color-opt${i===0?' active':''}" data-color="${c.name}"
+        title="${c.name}"
+        style="background:${c.hex};${c.hex==='#F5F0E8'||c.hex==='#F0EDE8'?'border:1.5px solid #ccc;':''}">
+        <span class="vs-color-check">✓</span>
+      </button>`
+    ).join('');
+    return `
+      <div id="vs-variants" class="vs-variants-wrap">
+        <div class="vs-variant-block">
+          <div class="vs-variant-label">
+            Kích cỡ: <strong id="vs-size-val">${v.sizes[0]}</strong>
+          </div>
+          <div class="vs-size-grid">${sizeOpts}</div>
+        </div>
+        <div class="vs-variant-block">
+          <div class="vs-variant-label">
+            Màu sắc: <strong id="vs-color-val">${v.colors[0].name}</strong>
+          </div>
+          <div class="vs-color-grid">${colorOpts}</div>
+        </div>
+      </div>`;
+  }
+
+  function attachVariantEvents() {
+    // Size
+    document.querySelectorAll('.vs-size-opt').forEach(btn => {
+      btn.addEventListener('click', function() {
+        document.querySelectorAll('.vs-size-opt').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        const label = document.getElementById('vs-size-val');
+        if (label) label.textContent = this.dataset.size;
+      });
+    });
+    // Color
+    document.querySelectorAll('.vs-color-opt').forEach(btn => {
+      btn.addEventListener('click', function() {
+        document.querySelectorAll('.vs-color-opt').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        const label = document.getElementById('vs-color-val');
+        if (label) label.textContent = this.dataset.color;
+      });
+    });
+  }
+
+  function getSelectedVariants() {
+    const sizeBtn  = document.querySelector('.vs-size-opt.active');
+    const colorBtn = document.querySelector('.vs-color-opt.active');
+    return {
+      size:  sizeBtn  ? sizeBtn.dataset.size   : '',
+      color: colorBtn ? colorBtn.dataset.color : ''
+    };
+  }
+
   let _pdPatchDone = false;
   function patchProductDetail() {
     if (_pdPatchDone) return;
     if (typeof window.openProductDetail !== 'function') { setTimeout(patchProductDetail, 150); return; }
     _pdPatchDone = true;
     const orig = window.openProductDetail;
+
+    /* Override addToCartFromDetail để kèm size/color */
+    const origAddToCart = window.addToCartFromDetail;
+    window.addToCartFromDetail = function() {
+      const p = window.currentDetailProduct;
+      if (!p) return;
+      const { size, color } = getSelectedVariants();
+      const suffix = [size, color].filter(Boolean).join(' · ');
+      const displayName = suffix ? `${p.name} (${suffix})` : p.name;
+      window.addToCartById(p.id, displayName, p.price, p.img, p.fallback);
+    };
+
     window.openProductDetail = function(id) {
       orig(id);
       setTimeout(() => {
         const p = (window.allProductsRef||[]).find(x => x.id === id);
-        document.querySelectorAll('.btn-story-mode').forEach(b => b.remove());
+
+        // Remove stale injections
+        document.querySelectorAll('.btn-story-mode, #vs-variants').forEach(b => b.remove());
+
         const summary = document.getElementById('product-summary');
         if (!summary) return;
+
+        // Inject variant selector right after summary
+        if (p) {
+          summary.insertAdjacentHTML('afterend', buildVariantHTML(p));
+          attachVariantEvents();
+        }
+
+        // Story button (sau variants)
+        const variantEl = document.getElementById('vs-variants');
+        const insertAfter = variantEl || summary;
         const btn = document.createElement('button');
         btn.className = 'btn-story-mode';
         btn.innerHTML = '📖 Câu chuyện sản phẩm';
         btn.onclick = () => window.openStoryMode(id);
-        summary.parentNode.insertBefore(btn, summary.nextSibling);
+        insertAfter.parentNode.insertBefore(btn, insertAfter.nextSibling);
+
+        // Reviews
         if (p) {
           const storyTab = document.getElementById('tab-story');
           if (storyTab) {

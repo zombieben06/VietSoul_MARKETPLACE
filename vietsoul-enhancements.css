@@ -509,3 +509,101 @@ body {
     line-height: 1.6;
 }
 .vs-confirm-pledge strong { color: #059669; }
+
+/* ═══════════════════════════════════════════════════════════════
+   PRODUCT VARIANTS — size & color selector
+   ═══════════════════════════════════════════════════════════════ */
+.vs-variants-wrap {
+    margin: 14px 0 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+.vs-variant-block {}
+.vs-variant-label {
+    font-size: 10px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: .14em;
+    color: rgba(139,0,0,0.55);
+    margin-bottom: 8px;
+}
+.vs-variant-label strong {
+    color: #1a0800;
+    font-weight: 900;
+    text-transform: none;
+    letter-spacing: 0;
+}
+
+/* Size buttons */
+.vs-size-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+.vs-size-opt {
+    padding: 5px 13px;
+    border-radius: 8px;
+    border: 1.5px solid rgba(139,0,0,0.15);
+    background: #faf5e8;
+    font-size: 10px;
+    font-weight: 800;
+    color: rgba(26,8,0,0.6);
+    cursor: pointer;
+    transition: all .18s;
+    letter-spacing: .04em;
+    line-height: 1.4;
+    white-space: nowrap;
+}
+.vs-size-opt:hover {
+    border-color: rgba(139,0,0,0.4);
+    color: #8B0000;
+    background: #fff3e0;
+}
+.vs-size-opt.active {
+    border-color: #8B0000;
+    background: #8B0000;
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(139,0,0,0.25);
+}
+
+/* Color swatches */
+.vs-color-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+}
+.vs-color-opt {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 2.5px solid transparent;
+    cursor: pointer;
+    transition: all .18s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+    position: relative;
+}
+.vs-color-opt:hover {
+    transform: scale(1.15);
+    box-shadow: 0 3px 10px rgba(0,0,0,0.25);
+}
+.vs-color-opt.active {
+    border-color: #8B0000;
+    transform: scale(1.12);
+    box-shadow: 0 0 0 2px #fff, 0 0 0 4px #8B0000;
+}
+.vs-color-check {
+    font-size: 9px;
+    font-weight: 900;
+    color: white;
+    opacity: 0;
+    transition: opacity .15s;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.6);
+    pointer-events: none;
+}
+.vs-color-opt.active .vs-color-check {
+    opacity: 1;
+}
