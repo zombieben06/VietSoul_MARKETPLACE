@@ -317,7 +317,7 @@
         const p = (window.allProductsRef||[]).find(x => x.id === id);
 
         // Remove stale injections
-        document.querySelectorAll('.btn-story-mode, #vs-variants').forEach(b => b.remove());
+        document.querySelectorAll('.btn-story-mode, #vs-variants, #vs-personalize-btn').forEach(b => b.remove());
 
         const summary = document.getElementById('product-summary');
         if (!summary) return;
@@ -328,14 +328,22 @@
           attachVariantEvents();
         }
 
-        // Story button (sau variants)
+        // Personalize button (sau variants, trước story)
         const variantEl = document.getElementById('vs-variants');
         const insertAfter = variantEl || summary;
+
+        const pzBtn = document.createElement('button');
+        pzBtn.id = 'vs-personalize-btn';
+        pzBtn.innerHTML = '✏️ Cá nhân hoá theo yêu cầu';
+        pzBtn.onclick = () => openPersonalizeModal(p);
+        insertAfter.parentNode.insertBefore(pzBtn, insertAfter.nextSibling);
+
+        // Story button (sau personalize)
         const btn = document.createElement('button');
         btn.className = 'btn-story-mode';
         btn.innerHTML = '📖 Câu chuyện sản phẩm';
         btn.onclick = () => window.openStoryMode(id);
-        insertAfter.parentNode.insertBefore(btn, insertAfter.nextSibling);
+        pzBtn.parentNode.insertBefore(btn, pzBtn.nextSibling);
 
         // Reviews
         if (p) {
@@ -1111,12 +1119,210 @@
   }
 
   /* ════════════════════════════════════════════════════════════
+     10. PERSONALIZE MODAL — cá nhân hoá đặt theo yêu cầu
+  ════════════════════════════════════════════════════════════ */
+
+  const PZ_OPTIONS = {
+    engrave:  { label: 'Khắc tên / thông điệp', icon: '🖋️', placeholder: 'VD: Tặng Mẹ yêu — Sinh nhật 2025' },
+    color:    { label: 'Màu sắc đặc biệt',       icon: '🎨', placeholder: 'VD: Đỏ đậm kết hợp vàng son' },
+    size:     { label: 'Kích thước tuỳ chỉnh',   icon: '📐', placeholder: 'VD: 25×35 cm hoặc size XL đặc biệt' },
+    material: { label: 'Chất liệu theo yêu cầu', icon: '🌿', placeholder: 'VD: Gỗ hương, lụa tơ tằm hạng A' },
+    wrap:     { label: 'Gói quà & thiệp',         icon: '🎁', placeholder: 'VD: Hộp gỗ + thiệp viết tay tiếng Việt' },
+    other:    { label: 'Yêu cầu khác',            icon: '💬', placeholder: 'Mô tả chi tiết ý tưởng của bạn...' },
+  };
+
+  function initPersonalizeModal() {
+    if (document.getElementById('vs-pz-overlay')) return;
+
+    const ov = document.createElement('div');
+    ov.id = 'vs-pz-overlay';
+    ov.innerHTML = `
+      <div id="vs-pz-panel">
+        <div class="vs-pz-header">
+          <div>
+            <div class="vs-pz-pre">VietSoul · Đặt riêng</div>
+            <div class="vs-pz-title">Cá nhân hoá sản phẩm</div>
+          </div>
+          <button id="vs-pz-close">✕</button>
+        </div>
+
+        <div id="vs-pz-product-bar"></div>
+
+        <div class="vs-pz-body">
+          <p class="vs-pz-desc">
+            Chọn một hoặc nhiều tuỳ chọn bên dưới. Nghệ nhân sẽ liên hệ xác nhận trong <strong>24 giờ</strong>.
+          </p>
+
+          <div class="vs-pz-options" id="vs-pz-options">
+            ${Object.entries(PZ_OPTIONS).map(([key, o]) => `
+              <label class="vs-pz-opt" data-key="${key}">
+                <input type="checkbox" class="hidden" value="${key}">
+                <div class="vs-pz-opt-inner" id="vs-pz-opt-${key}">
+                  <span class="vs-pz-opt-icon">${o.icon}</span>
+                  <span class="vs-pz-opt-label">${o.label}</span>
+                  <span class="vs-pz-opt-check">✓</span>
+                </div>
+                <div class="vs-pz-detail" id="vs-pz-detail-${key}">
+                  <textarea class="vs-pz-textarea" id="vs-pz-txt-${key}"
+                    placeholder="${o.placeholder}" rows="2"></textarea>
+                </div>
+              </label>`).join('')}
+          </div>
+
+          <div class="vs-pz-contact-block">
+            <div class="vs-pz-section-title">📞 Thông tin liên hệ xác nhận</div>
+            <div class="vs-pz-contact-grid">
+              <div>
+                <label class="vs-pz-field-label">Họ tên *</label>
+                <input class="vs-pz-input" id="vs-pz-name" type="text" placeholder="Nguyễn Văn A">
+              </div>
+              <div>
+                <label class="vs-pz-field-label">Số điện thoại *</label>
+                <input class="vs-pz-input" id="vs-pz-phone" type="tel" placeholder="0901 234 567">
+              </div>
+            </div>
+            <div style="margin-top:10px;">
+              <label class="vs-pz-field-label">Thời gian cần nhận hàng</label>
+              <input class="vs-pz-input" id="vs-pz-deadline" type="text" placeholder="VD: Trước 20/01/2026 — kịp Tết">
+            </div>
+          </div>
+        </div>
+
+        <div class="vs-pz-footer">
+          <button id="vs-pz-cancel">Huỷ</button>
+          <button id="vs-pz-submit">✨ Gửi yêu cầu cá nhân hoá</button>
+        </div>
+      </div>`;
+
+    document.body.appendChild(ov);
+
+    // Close
+    document.getElementById('vs-pz-close').addEventListener('click', closePersonalizeModal);
+    document.getElementById('vs-pz-cancel').addEventListener('click', closePersonalizeModal);
+    ov.addEventListener('click', e => { if (e.target === ov) closePersonalizeModal(); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closePersonalizeModal(); });
+
+    // Toggle options — click để check/uncheck + hiện textarea
+    document.querySelectorAll('.vs-pz-opt').forEach(label => {
+      label.addEventListener('click', function(e) {
+        if (e.target.tagName === 'TEXTAREA') return;
+        const key    = this.dataset.key;
+        const inner  = document.getElementById('vs-pz-opt-' + key);
+        const detail = document.getElementById('vs-pz-detail-' + key);
+        const cb     = this.querySelector('input[type="checkbox"]');
+        const active = !cb.checked;
+        cb.checked = active;
+        inner.classList.toggle('active', active);
+        detail.classList.toggle('open', active);
+        if (active) setTimeout(() => document.getElementById('vs-pz-txt-' + key)?.focus(), 200);
+      });
+    });
+
+    // Submit
+    document.getElementById('vs-pz-submit').addEventListener('click', submitPersonalize);
+  }
+
+  function openPersonalizeModal(p) {
+    initPersonalizeModal();
+    const ov = document.getElementById('vs-pz-overlay');
+    if (!ov) return;
+
+    // Product bar
+    const bar = document.getElementById('vs-pz-product-bar');
+    if (bar && p) {
+      bar.innerHTML = `
+        <div class="vs-pz-product-bar">
+          <img src="${p.img}" onerror="this.src='${p.fallback}'" alt="${p.name}">
+          <div>
+            <div class="vs-pz-product-name">${p.name}</div>
+            <div class="vs-pz-product-sub">${p.artist} · ${p.location}</div>
+          </div>
+          <div class="vs-pz-product-price">${p.price}₫</div>
+        </div>`;
+    }
+
+    // Reset form
+    document.querySelectorAll('.vs-pz-opt input[type="checkbox"]').forEach(cb => {
+      cb.checked = false;
+      const key = cb.closest('.vs-pz-opt').dataset.key;
+      document.getElementById('vs-pz-opt-' + key)?.classList.remove('active');
+      document.getElementById('vs-pz-detail-' + key)?.classList.remove('open');
+      const ta = document.getElementById('vs-pz-txt-' + key);
+      if (ta) ta.value = '';
+    });
+    ['vs-pz-name','vs-pz-phone','vs-pz-deadline'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.value = '';
+    });
+
+    // Pre-fill name/phone from checkout if available
+    const ckName  = document.getElementById('ck-name');
+    const ckPhone = document.getElementById('ck-phone');
+    if (ckName?.value)  document.getElementById('vs-pz-name').value  = ckName.value;
+    if (ckPhone?.value) document.getElementById('vs-pz-phone').value = ckPhone.value;
+
+    ov.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closePersonalizeModal() {
+    const ov = document.getElementById('vs-pz-overlay');
+    if (ov) ov.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  function submitPersonalize() {
+    const name  = (document.getElementById('vs-pz-name')  || {}).value || '';
+    const phone = (document.getElementById('vs-pz-phone') || {}).value || '';
+    if (!name.trim() || !phone.trim()) {
+      const n = document.getElementById('vs-pz-name');
+      const p = document.getElementById('vs-pz-phone');
+      if (n) n.style.borderColor = '#8B0000';
+      if (p) p.style.borderColor = '#8B0000';
+      setTimeout(() => {
+        if (n) n.style.borderColor = '';
+        if (p) p.style.borderColor = '';
+      }, 1800);
+      if (typeof window.showCartToast === 'function')
+        window.showCartToast('Vui lòng điền họ tên và số điện thoại!');
+      return;
+    }
+
+    const selected = [];
+    document.querySelectorAll('.vs-pz-opt input[type="checkbox"]:checked').forEach(cb => {
+      const key = cb.closest('.vs-pz-opt').dataset.key;
+      const txt = (document.getElementById('vs-pz-txt-' + key) || {}).value || '';
+      const opt = PZ_OPTIONS[key];
+      selected.push(`${opt.icon} ${opt.label}${txt ? ': ' + txt : ''}`);
+    });
+
+    // Show success state
+    const btn = document.getElementById('vs-pz-submit');
+    btn.textContent = '✅ Đã gửi yêu cầu!';
+    btn.disabled = true;
+    btn.style.background = 'linear-gradient(135deg,#2e7d32,#4caf50)';
+
+    setTimeout(() => {
+      closePersonalizeModal();
+      // Reset button sau khi đóng
+      setTimeout(() => {
+        btn.textContent = '✨ Gửi yêu cầu cá nhân hoá';
+        btn.disabled = false;
+        btn.style.background = '';
+      }, 500);
+      if (typeof window.showCartToast === 'function')
+        window.showCartToast('Yêu cầu đã gửi! Nghệ nhân sẽ liên hệ trong 24 giờ 🌿');
+    }, 1200);
+  }
+
+  /* ════════════════════════════════════════════════════════════
      INIT
   ════════════════════════════════════════════════════════════ */
   ready(function() {
     // 1. DOM overlays — idempotent
     initStoryOverlay();
     initCertificate();
+    initPersonalizeModal();
 
     // 2. Visual — no side effects
     applyWarmTint();
