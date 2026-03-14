@@ -97,6 +97,17 @@
             border-bottom-color: var(--color-secondary) !important;
         }
 
+        .font-viet-soul {
+            font-family: 'SVN Agency FB', sans-serif;
+            font-size: 1.5rem;           /* Tăng nhẹ kích thước nếu cần */
+            font-weight: 900;          /* Làm chữ cực đậm */
+            color: white;
+            line-height: 1;
+            text-transform: uppercase;
+            letter-spacing: -1px;      /* Thu hẹp khoảng cách các chữ cái cho đậm đà hơn */
+            display: inline-block;
+        }
+
         /* Village detail panel */
         #village-panel { transition: transform 0.38s cubic-bezier(0.22,1,0.36,1); }
         #village-panel.open { transform: translateX(0); }
@@ -770,8 +781,8 @@
                     
                     <div style="width: 100px;"></div> 
 
-                    <div class="flex items-center space-x-2">
-                        <img src="VIETSOUL.png" alt="VietSoul" class="h-14 w-auto object-contain" style="max-height:56px;">
+                    <div style="margin-left: -17px; z-index: 5;">
+                        <span class="font-viet-soul">VIETSOUL</span>
                     </div>
                     <span class="hidden md:inline-block text-[10px] px-2 py-1 rounded-full bg-secondary text-primary font-bold tracking-wider">CULTURE & GREEN COMMERCE</span>
                 </div>
